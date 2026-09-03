@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: khedmati-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: khedmati
+      POSTGRES_PASSWORD: khedmati
+      POSTGRES_DB: khedmati
+    ports:
+      - "5432:5432"
+    volumes:
+      - khedmati_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U khedmati"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: khedmati-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - khedmati_redis_data:/data
+
+  # Placeholder for a future S3-compatible object store (galerie artisans, pièces jointes demandes)
+  minio:
+    image: minio/minio:latest
+    container_name: khedmati-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: khedmati
+      MINIO_ROOT_PASSWORD: khedmati123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - khedmati_minio_data:/data
+
+volumes:
+  khedmati_pg_data:
+  khedmati_redis_data:
+  khedmati_minio_data:

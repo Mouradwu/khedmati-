@@ -1,0 +1,31 @@
+{
+  "name": "khedmati",
+  "private": true,
+  "version": "0.1.0",
+  "description": "KHEDMATI (خدمتي) — plateforme intelligente de mise en relation Clients / Artisans / Professionnels en Algérie",
+  "workspaces": [
+    "apps/api",
+    "apps/web",
+    "packages/database",
+    "packages/shared",
+    "packages/types",
+    "packages/i18n"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "db:generate": "npm run generate --workspace=packages/database",
+    "db:migrate": "npm run migrate:dev --workspace=packages/database",
+    "db:seed": "npm run seed --workspace=packages/database",
+    "api:dev": "npm run start:dev --workspace=apps/api",
+    "web:dev": "npm run dev --workspace=apps/web"
+  },
+  "devDependencies": {
+    "turbo": "^2.1.0",
+    "typescript": "^5.5.4"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

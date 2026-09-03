@@ -1,0 +1,1208 @@
+// ============================================================================
+// KHEDMATI (خدمتي) — Schéma de base de données
+//
+// Ce schéma implémente le modèle de données décrit dans le cahier des charges
+// (section 48) et les machines à états des sections 7, 8, 33-36 et 40.
+//
+// Principes respectés :
+//  - Aucune donnée métier (catégories, prix, statuts de config) n'est codée
+//    en dur côté application : tout est administrable via ces tables.
+//  - Toute demande client et toute offre artisan passent par une validation
+//    par appel avant publication (voir ValidationCase / Call).
+//  - L'architecture de paiement (Plan/Subscription/Payment/...) existe dès
+//    le MVP mais n'est activée par aucune règle métier obligatoire.
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum UserRole {
+  CLIENT
+  PROFESSIONAL
+  COMPANY_ADMIN
+  EMPLOYEE
+  OPERATOR // opérateur du centre d'appels KHEDMATI
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  PENDING
+  SUSPENDED
+  BANNED
+  DELETED
+}
+
+enum Language {
+  FR
+  AR
+  DARIJA
+  EN
+}
+
+enum PhoneVerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  FAILED
+}
+
+// --- Cycle de vie d'une demande client (section 7) -------------------------
+enum RequestStatus {
+  DRAFT
+  SUBMITTED
+  PENDING_VALIDATION
+  CALL_PENDING
+  CALL_IN_PROGRESS
+  CALLBACK_REQUESTED
+  NEEDS_INFORMATION
+  VALIDATED
+  VALIDATED_WITH_CHANGES
+  PUBLISHED
+  MATCHING
+  PROFESSIONAL_CONTACTED
+  ACCEPTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  EXPIRED
+  REJECTED
+  SUSPICIOUS
+  DUPLICATE
+  DISPUTED
+  CLOSED
+}
+
+enum UrgencyLevel {
+  LOW
+  NORMAL
+  HIGH
+  URGENT_NOW // "J'ai besoin de quelqu'un maintenant" (section 29)
+}
+
+// --- Cycle de vie d'une offre artisan (section 8) ---------------------------
+enum OfferStatus {
+  DRAFT
+  SUBMITTED
+  PENDING_CALL_VALIDATION
+  CALL_IN_PROGRESS
+  VALIDATED
+  VALIDATED_WITH_CHANGES
+  PUBLISHED
+  SUSPENDED
+  REJECTED
+  EXPIRED
+}
+
+// --- Centre d'appels (sections 39-40) ---------------------------------------
+enum CallQueuePriority {
+  PRIORITY
+  TO_CALL
+  CALLBACK_REQUESTED
+  VALIDATED
+  WAITING_FOR_INFO
+  REFUSED
+}
+
+enum CallStatus {
+  PENDING
+  CALLING
+  ANSWERED
+  NO_ANSWER
+  CALLBACK_REQUESTED
+  WRONG_NUMBER
+  VALIDATED
+  VALIDATED_WITH_CHANGES
+  NEEDS_INFO
+  REFUSED
+  SUSPICIOUS
+  REJECTED
+}
+
+enum CallDirection {
+  OUTBOUND // KHEDMATI appelle l'utilisateur
+  INBOUND // l'utilisateur appelle KHEDMATI
+}
+
+enum ValidationTargetType {
+  SERVICE_REQUEST
+  PROFESSIONAL_OFFER
+  USER_IDENTITY
+}
+
+enum MatchStatus {
+  SUGGESTED
+  SENT
+  VIEWED
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+enum AppointmentStatus {
+  PROPOSED
+  CONFIRMED
+  RESCHEDULED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+enum ProjectStatus {
+  PLANNED
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum ReportReason {
+  SPAM
+  FAKE_PROFILE
+  FRAUD
+  INAPPROPRIATE_CONTENT
+  DUPLICATE
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+enum NotificationChannel {
+  PUSH
+  SMS
+  EMAIL
+  IN_APP
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  READ
+}
+
+// --- Facturation / abonnements (sections 33-36) -----------------------------
+enum SubscriptionStatus {
+  FREE
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+  SUSPENDED
+}
+
+enum PlanAudience {
+  CLIENT
+  PROFESSIONAL
+  COMPANY
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  OVERDUE
+  VOID
+}
+
+enum PromotionType {
+  DISCOUNT_PERCENT
+  DISCOUNT_FIXED
+  FREE_CREDITS
+  FEATURED_PLACEMENT
+}
+
+enum VerificationType {
+  IDENTITY
+  PROFESSIONAL_LICENSE
+  BUSINESS_REGISTRATION
+  PHONE
+}
+
+enum VerificationStatus {
+  NOT_SUBMITTED
+  SUBMITTED
+  UNDER_REVIEW
+  VERIFIED
+  REJECTED
+}
+
+// ============================================================================
+// UTILISATEURS & PROFILS
+// ============================================================================
+
+model User {
+  id                    String                   @id @default(cuid())
+  phone                 String                   @unique
+  email                 String?                  @unique
+  passwordHash          String
+  role                  UserRole                 @default(CLIENT)
+  status                UserStatus               @default(ACTIVE)
+  preferredLanguage     Language                 @default(FR)
+  phoneVerification     PhoneVerificationStatus  @default(UNVERIFIED)
+  phoneVerifiedAt       DateTime?
+
+  clientProfile         ClientProfile?
+  professionalProfile   ProfessionalProfile?
+  companyMemberships    Employee[]
+
+  serviceRequests       ServiceRequest[]
+  favorites             Favorite[]
+  reviewsWritten        Review[]                 @relation("ReviewAuthor")
+  notifications         Notification[]
+  reportsFiled          Report[]                 @relation("ReportFiledBy")
+  reportsAgainst        Report[]                 @relation("ReportTarget")
+  subscriptions         Subscription[]
+  payments              Payment[]
+  wallet                Wallet?
+  verifications         Verification[]
+  auditLogs             AuditLog[]
+  callsAsParticipant    CallParticipant[]
+  sentMessages          Message[]
+  conversationsAsClient Conversation[]           @relation("ConversationClient")
+  conversationsAsPro    Conversation[]           @relation("ConversationProfessional")
+  operatorAssignments   ValidationCase[]         @relation("ValidationOperator")
+  adminActions          AdminAction[]
+
+  createdAt             DateTime                 @default(now())
+  updatedAt              DateTime                @updatedAt
+
+  @@index([role, status])
+  @@map("users")
+}
+
+model ClientProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName     String
+  lastName      String
+  locationId    String?
+  location      Location? @relation(fields: [locationId], references: [id])
+
+  serviceRequests ServiceRequest[] @relation("ClientProfileRequests")
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("client_profiles")
+}
+
+model ProfessionalProfile {
+  id                 String    @id @default(cuid())
+  userId             String    @unique
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  firstName          String
+  lastName            String
+  businessName       String?
+  photoUrl           String?
+  logoUrl            String?
+  bio                String?
+
+  locationId         String?
+  location           Location? @relation(fields: [locationId], references: [id])
+  interventionRadiusKm Int     @default(10)
+
+  yearsExperience    Int?
+  languagesSpoken    Language[]
+  indicativePricing  String? // texte libre facultatif, jamais utilisé pour calcul
+
+  isVerifiedBadge    Boolean   @default(false) // ne JAMAIS activer sans preuve réelle (section 32)
+
+  ratingAverage      Float     @default(0)
+  ratingCount        Int       @default(0)
+  responseTimeAvgMin Int?
+  interventionCount  Int       @default(0)
+
+  professions        ProfessionalProfession[]
+  specialties        ProfessionalSpecialty[]
+  services           ProfessionalService[]
+  availabilities     Availability[]
+  offers             ProfessionalOffer[]
+  galleryItems       GalleryItem[]
+  matches            RequestMatch[]
+  quotesIssued       Quote[]
+
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@map("professional_profiles")
+}
+
+model GalleryItem {
+  id            String               @id @default(cuid())
+  professionalId String
+  professional  ProfessionalProfile  @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  url           String
+  caption       String?
+  createdAt     DateTime             @default(now())
+
+  @@map("gallery_items")
+}
+
+model Company {
+  id            String     @id @default(cuid())
+  name          String
+  registrationNumber String?
+  locationId    String?
+  location      Location?  @relation(fields: [locationId], references: [id])
+  employees     Employee[]
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@map("companies")
+}
+
+model Employee {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  title     String?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, companyId])
+  @@map("employees")
+}
+
+// ============================================================================
+// TAXONOMIE MÉTIERS — 100% administrable (section 12)
+//   Groupe -> Corps de métier -> Spécialité -> Service
+// ============================================================================
+
+model Category {
+  id          String       @id @default(cuid())
+  name        String
+  nameAr      String?
+  slug        String       @unique
+  icon        String? // ex: "🏗️"
+  description String?
+  isActive    Boolean      @default(true)
+  sortOrder   Int          @default(0)
+  professions Profession[]
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("categories")
+}
+
+model Profession {
+  id          String       @id @default(cuid())
+  categoryId  String
+  category    Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name        String
+  nameAr      String?
+  slug        String       @unique
+  synonyms    String[]     // "plombier", "sbaak", "n7taj plombier"... (recherche intelligente, section 25)
+  isActive    Boolean      @default(true)
+  sortOrder   Int          @default(0)
+
+  specialties Specialty[]
+  professionalLinks ProfessionalProfession[]
+  requests    ServiceRequest[]
+  offers      ProfessionalOffer[]
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("professions")
+}
+
+model Specialty {
+  id           String       @id @default(cuid())
+  professionId String
+  profession   Profession   @relation(fields: [professionId], references: [id], onDelete: Cascade)
+  name         String
+  nameAr       String?
+  slug         String       @unique
+  isActive     Boolean      @default(true)
+  sortOrder    Int          @default(0)
+
+  services     Service[]
+  professionalLinks ProfessionalSpecialty[]
+  requests     ServiceRequest[]
+
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@map("specialties")
+}
+
+model Service {
+  id          String    @id @default(cuid())
+  specialtyId String
+  specialty   Specialty @relation(fields: [specialtyId], references: [id], onDelete: Cascade)
+  name        String
+  nameAr      String?
+  slug        String    @unique
+  isActive    Boolean   @default(true)
+
+  professionalLinks ProfessionalService[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("services")
+}
+
+// Tables de liaison many-to-many artisan <-> taxonomie
+model ProfessionalProfession {
+  id             String              @id @default(cuid())
+  professionalId String
+  professional   ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  professionId   String
+  profession     Profession          @relation(fields: [professionId], references: [id], onDelete: Cascade)
+
+  @@unique([professionalId, professionId])
+  @@map("professional_professions")
+}
+
+model ProfessionalSpecialty {
+  id             String              @id @default(cuid())
+  professionalId String
+  professional   ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  specialtyId    String
+  specialty      Specialty           @relation(fields: [specialtyId], references: [id], onDelete: Cascade)
+
+  @@unique([professionalId, specialtyId])
+  @@map("professional_specialties")
+}
+
+model ProfessionalService {
+  id             String              @id @default(cuid())
+  professionalId String
+  professional   ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  serviceId      String
+  service        Service             @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([professionalId, serviceId])
+  @@map("professional_services")
+}
+
+// ============================================================================
+// LOCALISATION (sections 9-11, 49)
+// ============================================================================
+
+model Location {
+  id             String   @id @default(cuid())
+  latitude       Float
+  longitude      Float
+  wilaya         String
+  daira          String?
+  commune        String?
+  addressLine    String? // adresse précise — jamais exposée publiquement (section 11)
+  isPublicApprox Boolean  @default(true)
+
+  clientProfiles       ClientProfile[]
+  professionalProfiles ProfessionalProfile[]
+  companies            Company[]
+  serviceRequests      ServiceRequest[]
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Index géographique — la recherche par distance recalcule via Haversine
+  // côté service (LocationsService) ; pour la montée en charge, prévoir
+  // PostGIS + un index GiST sur (latitude, longitude).
+  @@index([wilaya])
+  @@index([latitude, longitude])
+  @@map("locations")
+}
+
+model Availability {
+  id             String              @id @default(cuid())
+  professionalId String
+  professional   ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  dayOfWeek      Int // 0 = dimanche ... 6 = samedi
+  startTime      String // "08:00"
+  endTime        String // "18:00"
+  isAvailableNow Boolean             @default(false)
+
+  @@map("availabilities")
+}
+
+// ============================================================================
+// DEMANDES CLIENT (sections 5-7, 27-29)
+// ============================================================================
+
+model ServiceRequest {
+  id               String         @id @default(cuid())
+  clientId         String
+  client           User           @relation(fields: [clientId], references: [id])
+  clientProfileId  String?
+  clientProfile    ClientProfile? @relation("ClientProfileRequests", fields: [clientProfileId], references: [id])
+
+  professionId     String?
+  profession       Profession?    @relation(fields: [professionId], references: [id])
+  specialtyId      String?
+  specialty        Specialty?     @relation(fields: [specialtyId], references: [id])
+
+  rawDescription   String // texte original saisi/dicté par le client
+  structuredSummary String? // reformulation structurée générée par l'IA
+  aiConfidence     Float? // 0-1, niveau de confiance de l'extraction IA
+
+  locationId       String?
+  location         Location?      @relation(fields: [locationId], references: [id])
+
+  urgency          UrgencyLevel   @default(NORMAL)
+  desiredDate      DateTime?
+  budgetIndicative  String?
+
+  status           RequestStatus  @default(DRAFT)
+
+  attachments      RequestAttachment[]
+  questions        RequestQuestion[]
+  matches          RequestMatch[]
+  validationCases  ValidationCase[]
+  conversations    Conversation[]
+  appointments     Appointment[]
+  quotes           Quote[]
+  project          Project?
+  reviews          Review[]
+
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([status])
+  @@index([professionId, status])
+  @@map("service_requests")
+}
+
+model RequestAttachment {
+  id        String         @id @default(cuid())
+  requestId String
+  request   ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  url       String
+  type      String // "photo" | "video" | "document" | "plan" | "screenshot"
+  createdAt DateTime       @default(now())
+
+  @@map("request_attachments")
+}
+
+// Questions complémentaires posées par l'IA quand des informations manquent
+model RequestQuestion {
+  id         String           @id @default(cuid())
+  requestId  String
+  request    ServiceRequest   @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  question   String
+  isAnswered Boolean          @default(false)
+  answer     RequestAnswer?
+  createdAt  DateTime         @default(now())
+
+  @@map("request_questions")
+}
+
+model RequestAnswer {
+  id         String          @id @default(cuid())
+  questionId String          @unique
+  question   RequestQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answerText String
+  createdAt  DateTime        @default(now())
+
+  @@map("request_answers")
+}
+
+// ============================================================================
+// OFFRES ARTISAN (section 8, 30)
+// ============================================================================
+
+model ProfessionalOffer {
+  id             String              @id @default(cuid())
+  professionalId String
+  professional   ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  professionId   String?
+  profession     Profession?         @relation(fields: [professionId], references: [id])
+
+  rawDescription String
+  structuredSummary String?
+
+  status         OfferStatus         @default(DRAFT)
+
+  attachments    OfferAttachment[]
+  validationCases ValidationCase[]
+  responses      RequestResponse[]
+
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@index([status])
+  @@map("professional_offers")
+}
+
+model OfferAttachment {
+  id       String            @id @default(cuid())
+  offerId  String
+  offer    ProfessionalOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  url      String
+  type     String
+  createdAt DateTime         @default(now())
+
+  @@map("offer_attachments")
+}
+
+// ============================================================================
+// MATCHING (section 26)
+// ============================================================================
+
+// Configuration administrable des poids du moteur de matching
+model MatchingConfig {
+  id                    String   @id @default(cuid())
+  name                  String   @default("default")
+  isActive              Boolean  @default(true)
+  weightProfession      Float    @default(0.30)
+  weightSpecialty       Float    @default(0.20)
+  weightDistance        Float    @default(0.20)
+  weightAvailability    Float    @default(0.10)
+  weightExperience      Float    @default(0.05)
+  weightReputation      Float    @default(0.05)
+  weightResponseTime    Float    @default(0.05)
+  weightInterventionZone Float   @default(0.05)
+  updatedAt             DateTime @updatedAt
+
+  @@map("matching_configs")
+}
+
+model RequestMatch {
+  id             String              @id @default(cuid())
+  requestId      String
+  request        ServiceRequest      @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  professionalId String
+  professional   ProfessionalProfile @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  score          Float // score global 0-100
+  distanceKm     Float?
+  status         MatchStatus         @default(SUGGESTED)
+
+  response       RequestResponse?
+
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@unique([requestId, professionalId])
+  @@index([requestId, score])
+  @@map("request_matches")
+}
+
+model RequestResponse {
+  id       String            @id @default(cuid())
+  matchId  String            @unique
+  match    RequestMatch      @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  offerId  String?
+  offer    ProfessionalOffer? @relation(fields: [offerId], references: [id])
+  message  String?
+  accepted Boolean?
+  createdAt DateTime         @default(now())
+
+  @@map("request_responses")
+}
+
+// ============================================================================
+// VALIDATION PAR APPEL — cœur de confiance de KHEDMATI (sections 5-8, 39-40)
+// ============================================================================
+
+model ValidationCase {
+  id             String                @id @default(cuid())
+  targetType     ValidationTargetType
+  serviceRequestId String?
+  serviceRequest ServiceRequest?       @relation(fields: [serviceRequestId], references: [id])
+  offerId        String?
+  offer          ProfessionalOffer?    @relation(fields: [offerId], references: [id])
+
+  priority       CallQueuePriority     @default(TO_CALL)
+  operatorId     String?
+  operator       User?                 @relation("ValidationOperator", fields: [operatorId], references: [id])
+
+  attempts       ValidationAttempt[]
+  notes          ValidationNote[]
+  calls          Call[]
+
+  resolvedStatus CallStatus?
+  resolvedAt     DateTime?
+
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  @@index([priority, operatorId])
+  @@map("validation_cases")
+}
+
+model ValidationAttempt {
+  id               String         @id @default(cuid())
+  validationCaseId String
+  validationCase   ValidationCase @relation(fields: [validationCaseId], references: [id], onDelete: Cascade)
+  attemptNumber    Int
+  outcome          CallStatus
+  attemptedAt      DateTime       @default(now())
+
+  @@map("validation_attempts")
+}
+
+model ValidationNote {
+  id               String         @id @default(cuid())
+  validationCaseId String
+  validationCase   ValidationCase @relation(fields: [validationCaseId], references: [id], onDelete: Cascade)
+  authorId         String
+  note             String
+  createdAt        DateTime       @default(now())
+
+  @@map("validation_notes")
+}
+
+model Call {
+  id               String          @id @default(cuid())
+  validationCaseId String?
+  validationCase   ValidationCase? @relation(fields: [validationCaseId], references: [id])
+
+  direction        CallDirection
+  status           CallStatus      @default(PENDING)
+  providerCallId   String? // identifiant côté fournisseur télécom (interchangeable, section 4)
+  providerName     String? // ex: "twilio", "vonage"... configurable
+
+  scheduledAt      DateTime?
+  startedAt        DateTime?
+  endedAt          DateTime?
+  durationSeconds  Int?
+
+  participants     CallParticipant[]
+  summary          CallSummary?
+  callbackRequest  CallbackRequest?
+
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([status])
+  @@map("calls")
+}
+
+model CallParticipant {
+  id     String @id @default(cuid())
+  callId String
+  call   Call   @relation(fields: [callId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  role   String // "operator" | "client" | "professional"
+
+  @@map("call_participants")
+}
+
+model CallSummary {
+  id        String  @id @default(cuid())
+  callId    String  @unique
+  call      Call    @relation(fields: [callId], references: [id], onDelete: Cascade)
+  summary   String
+  // Transcription/enregistrement : ne JAMAIS activer avant consentement +
+  // cadre légal + politique de rétention définis (section 42).
+  hasRecordingConsent Boolean @default(false)
+  recordingUrl        String?
+  createdAt DateTime @default(now())
+
+  @@map("call_summaries")
+}
+
+model CallbackRequest {
+  id        String   @id @default(cuid())
+  callId    String   @unique
+  call      Call     @relation(fields: [callId], references: [id], onDelete: Cascade)
+  requestedFor DateTime?
+  reason    String?
+  fulfilled Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("callback_requests")
+}
+
+// ============================================================================
+// MESSAGERIE (section 31) — accessible seulement après acceptation
+// ============================================================================
+
+model Conversation {
+  id             String          @id @default(cuid())
+  requestId      String?
+  request        ServiceRequest? @relation(fields: [requestId], references: [id])
+  clientId       String
+  client         User            @relation("ConversationClient", fields: [clientId], references: [id])
+  professionalId String
+  professional   User            @relation("ConversationProfessional", fields: [professionalId], references: [id])
+  isUnlocked     Boolean         @default(false) // true seulement après acceptation d'un match
+
+  messages       Message[]
+
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id])
+  content        String
+  attachmentUrl  String?
+  readAt         DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@map("messages")
+}
+
+// ============================================================================
+// RENDEZ-VOUS / DEVIS / CHANTIER
+// ============================================================================
+
+model Appointment {
+  id        String            @id @default(cuid())
+  requestId String
+  request   ServiceRequest    @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  scheduledAt DateTime
+  status    AppointmentStatus @default(PROPOSED)
+  notes     String?
+
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@map("appointments")
+}
+
+model Quote {
+  id             String              @id @default(cuid())
+  requestId      String
+  request        ServiceRequest      @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  professionalId String
+  professional   ProfessionalProfile @relation(fields: [professionalId], references: [id])
+  status         QuoteStatus         @default(DRAFT)
+  totalAmount    Decimal             @db.Decimal(12, 2)
+  currency       String              @default("DZD")
+  items          QuoteItem[]
+  validUntil     DateTime?
+
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@map("quotes")
+}
+
+model QuoteItem {
+  id          String  @id @default(cuid())
+  quoteId     String
+  quote       Quote   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  label       String
+  quantity    Float   @default(1)
+  unitPrice   Decimal @db.Decimal(12, 2)
+
+  @@map("quote_items")
+}
+
+model Project {
+  id        String        @id @default(cuid())
+  requestId String        @unique
+  request   ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  status    ProjectStatus @default(PLANNED)
+  startedAt DateTime?
+  completedAt DateTime?
+
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@map("projects")
+}
+
+// ============================================================================
+// RÉPUTATION (section 32)
+// ============================================================================
+
+model Review {
+  id             String         @id @default(cuid())
+  requestId      String?
+  request        ServiceRequest? @relation(fields: [requestId], references: [id])
+  authorId       String
+  author         User           @relation("ReviewAuthor", fields: [authorId], references: [id])
+  professionalId String
+  professional   ProfessionalProfile @relation(fields: [professionalId], references: [id])
+
+  ratingOverall     Int // 1-5
+  ratingPunctuality Int?
+  ratingQuality     Int?
+  ratingCommunication Int?
+  ratingValue       Int?
+  comment           String?
+
+  createdAt      DateTime       @default(now())
+
+  @@map("reviews")
+}
+
+model Favorite {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  professionalId String
+  createdAt      DateTime @default(now())
+
+  @@unique([userId, professionalId])
+  @@map("favorites")
+}
+
+model Report {
+  id           String       @id @default(cuid())
+  filedById    String
+  filedBy      User         @relation("ReportFiledBy", fields: [filedById], references: [id])
+  targetUserId String
+  targetUser   User         @relation("ReportTarget", fields: [targetUserId], references: [id])
+  reason       ReportReason
+  details      String?
+  status       ReportStatus @default(OPEN)
+
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@map("reports")
+}
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+model Notification {
+  id        String              @id @default(cuid())
+  userId    String
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel   NotificationChannel
+  title     String
+  body      String
+  status    NotificationStatus  @default(PENDING)
+  meta      Json?
+
+  createdAt DateTime            @default(now())
+  sentAt    DateTime?
+  readAt    DateTime?
+
+  @@index([userId, status])
+  @@map("notifications")
+}
+
+// ============================================================================
+// FACTURATION / ABONNEMENTS — architecture prête, non activée (sections 33-37)
+// ============================================================================
+
+model Plan {
+  id            String        @id @default(cuid())
+  code          String        @unique // ex: "pro_visibility"
+  name          String
+  audience      PlanAudience
+  priceMonthly  Decimal       @db.Decimal(12, 2)
+  currency      String        @default("DZD")
+  isActive      Boolean       @default(false) // désactivé par défaut au lancement
+  features      Json // liste de features administrable
+
+  subscriptions Subscription[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("plans")
+}
+
+model Subscription {
+  id        String             @id @default(cuid())
+  userId    String
+  user      User               @relation(fields: [userId], references: [id])
+  planId    String
+  plan      Plan               @relation(fields: [planId], references: [id])
+  status    SubscriptionStatus @default(FREE)
+  startedAt DateTime           @default(now())
+  currentPeriodEnd DateTime?
+  cancelledAt DateTime?
+
+  invoices  Invoice[]
+
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@map("subscriptions")
+}
+
+model Wallet {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  creditBalance Decimal @default(0) @db.Decimal(12, 2)
+  credits   Credit[]
+
+  updatedAt DateTime @updatedAt
+
+  @@map("wallets")
+}
+
+model Credit {
+  id       String  @id @default(cuid())
+  walletId String
+  wallet   Wallet  @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  amount   Decimal @db.Decimal(12, 2)
+  reason   String // "promotion" | "purchase" | "refund" | "admin_grant"
+  createdAt DateTime @default(now())
+
+  @@map("credits")
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  amount        Decimal       @db.Decimal(12, 2)
+  currency      String        @default("DZD")
+  status        PaymentStatus @default(PENDING)
+  provider      String? // interchangeable — CIB / EDAHABIA / Stripe / etc.
+  providerRef   String?
+
+  transactions  Transaction[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("payments")
+}
+
+model Transaction {
+  id        String   @id @default(cuid())
+  paymentId String
+  payment   Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  type      String // "charge" | "refund" | "commission"
+  amount    Decimal  @db.Decimal(12, 2)
+  createdAt DateTime @default(now())
+
+  @@map("transactions")
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  subscriptionId String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  amount         Decimal       @db.Decimal(12, 2)
+  currency       String        @default("DZD")
+  status         InvoiceStatus @default(DRAFT)
+  issuedAt       DateTime?
+  dueAt          DateTime?
+  paidAt         DateTime?
+
+  createdAt      DateTime      @default(now())
+
+  @@map("invoices")
+}
+
+model Coupon {
+  id         String   @id @default(cuid())
+  code       String   @unique
+  promotionId String
+  promotion  Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  maxRedemptions Int?
+  redemptions Int     @default(0)
+  expiresAt  DateTime?
+
+  @@map("coupons")
+}
+
+model Promotion {
+  id          String        @id @default(cuid())
+  name        String
+  type        PromotionType
+  value       Decimal       @db.Decimal(12, 2)
+  isActive    Boolean       @default(false)
+  startsAt    DateTime?
+  endsAt      DateTime?
+  coupons     Coupon[]
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("promotions")
+}
+
+// ============================================================================
+// VÉRIFICATION / SÉCURITÉ / AUDIT (sections 32, 41-42)
+// ============================================================================
+
+model Verification {
+  id        String              @id @default(cuid())
+  userId    String
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      VerificationType
+  status    VerificationStatus  @default(NOT_SUBMITTED)
+  documentUrl String?
+  reviewedById String?
+  reviewedAt  DateTime?
+  rejectionReason String?
+
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  @@map("verifications")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  entityType String
+  entityId  String?
+  metadata  Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+model AdminAction {
+  id        String   @id @default(cuid())
+  adminId   String
+  admin     User     @relation(fields: [adminId], references: [id])
+  action    String
+  targetType String
+  targetId  String
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@map("admin_actions")
+}
