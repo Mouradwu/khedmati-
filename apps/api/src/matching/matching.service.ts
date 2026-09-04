@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import { PrismaService } from "../prisma/prisma.service";
 import { LocationsService } from "../locations/locations.service";
 import { ConversationsService } from "../conversations/conversations.service";
+import { RequestsService } from "../requests/requests.service";
 
 /**
  * Moteur de matching (section 26). Les poids par défaut reproduisent
@@ -19,6 +20,7 @@ export class MatchingService {
     private prisma: PrismaService,
     private locationsService: LocationsService,
     private conversationsService: ConversationsService,
+    private requestsService: RequestsService,
   ) {}
 
   private async getActiveConfig() {
@@ -165,13 +167,24 @@ export class MatchingService {
     });
 
     // Acceptation = déblocage du contact (section 20-21, règle centrale du
-    // parcours demandeur/artisan) : on ouvre la conversation associée.
+    // parcours demandeur/artisan) : on ouvre la conversation associée, et
+    // on fait avancer le statut de la demande elle-même (pas seulement du
+    // match) pour que le reste du cycle de vie (terminée, avis) reste
+    // cohérent avec la machine à états.
     if (accepted) {
       await this.conversationsService.unlockAfterAcceptance({
         requestId: match.requestId,
         clientId: match.request.clientId,
         professionalUserId: match.professional.userId,
       });
+
+      const currentStatus = match.request.status;
+      if (currentStatus === "MATCHING") {
+        await this.requestsService.transitionStatus(match.requestId, "PROFESSIONAL_CONTACTED");
+        await this.requestsService.transitionStatus(match.requestId, "ACCEPTED");
+      } else if (currentStatus === "PROFESSIONAL_CONTACTED") {
+        await this.requestsService.transitionStatus(match.requestId, "ACCEPTED");
+      }
     }
 
     return this.prisma.requestResponse.create({

@@ -1,126 +1,69 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useAuth, ApiError } from "@/lib/auth";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function ClientRegisterPage() {
-  return (
-    <Suspense fallback={null}>
-      <ClientRegisterForm />
-    </Suspense>
-  );
-}
-
-function ClientRegisterForm() {
-  const router = useRouter();
+function RoleChooser() {
   const searchParams = useSearchParams();
-  const { register } = useAuth();
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
-    try {
-      await register({ phone, password, role: "CLIENT", firstName, lastName });
-      const desc = searchParams.get("desc");
-      router.push(desc ? `/mes-demandes/nouvelle?desc=${encodeURIComponent(desc)}` : "/mes-demandes");
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Inscription impossible.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const qs = searchParams.toString();
+  const suffix = qs ? `?${qs}` : "";
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-paper px-6 py-12">
-      <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
+      <div className="w-full max-w-2xl">
+        <div className="mb-10 text-center">
           <span className="font-display text-2xl italic text-ink">Khedmati</span>
           <span className="font-arabic ml-2 text-lg text-emerald-dark">خدمتي</span>
+          <h1 className="mt-6 font-display text-[28px] italic text-ink">
+            Comment souhaitez-vous utiliser l'application ?
+          </h1>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col gap-4 rounded-2xl border border-line bg-white/60 p-6"
-        >
-          <h1 className="font-display text-[20px] italic text-ink">Créer un compte client</h1>
-          <p className="text-[13px] text-ink/60">
-            Gratuit. Aucune vérification téléphonique bloquante — décrivez votre besoin dès
-            l'inscription terminée.
-          </p>
-
-          <div className="flex gap-3">
-            <div className="flex flex-1 flex-col gap-1.5">
-              <label className="text-[13px] font-medium text-ink/70">Prénom</label>
-              <input
-                required
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink focus:border-emerald"
-              />
-            </div>
-            <div className="flex flex-1 flex-col gap-1.5">
-              <label className="text-[13px] font-medium text-ink/70">Nom</label>
-              <input
-                required
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink focus:border-emerald"
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[13px] font-medium text-ink/70">Téléphone</label>
-            <input
-              type="tel"
-              required
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+213..."
-              className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink focus:border-emerald"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[13px] font-medium text-ink/70">Mot de passe</label>
-            <input
-              type="password"
-              required
-              minLength={8}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink focus:border-emerald"
-            />
-          </div>
-
-          {error && (
-            <p className="rounded-lg bg-clay-soft px-3 py-2 text-[13px] text-clay-dark">{error}</p>
-          )}
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="mt-2 rounded-xl bg-emerald px-4 py-2.5 text-[15px] font-medium text-paper hover:bg-emerald-dark disabled:opacity-60"
+        <div className="grid gap-4 sm:grid-cols-2">
+          <a
+            href={`/inscription/artisan${suffix}`}
+            className="group flex flex-col gap-3 rounded-2xl border border-line bg-white/60 p-6 transition-colors hover:border-clay"
           >
-            {isSubmitting ? "Création..." : "Créer mon compte"}
-          </button>
+            <span className="text-3xl">🔧</span>
+            <h2 className="font-display text-[20px] italic text-ink">Je suis artisan</h2>
+            <p className="text-[14px] text-ink/60">
+              Je propose des services et je souhaite recevoir des demandes de clients.
+            </p>
+            <span className="mt-2 inline-block rounded-xl bg-clay px-4 py-2 text-center text-[14px] font-medium text-paper group-hover:bg-clay-dark">
+              S'inscrire comme artisan
+            </span>
+          </a>
 
-          <p className="text-center text-[13px] text-ink/50">
-            Déjà un compte ?{" "}
-            <a href="/login" className="font-medium text-emerald-dark hover:underline">
-              Se connecter
-            </a>
-          </p>
-        </form>
+          <a
+            href={`/inscription/client${suffix}`}
+            className="group flex flex-col gap-3 rounded-2xl border border-line bg-white/60 p-6 transition-colors hover:border-emerald"
+          >
+            <span className="text-3xl">🏠</span>
+            <h2 className="font-display text-[20px] italic text-ink">Je cherche un artisan</h2>
+            <p className="text-[14px] text-ink/60">
+              Je recherche un professionnel pour réaliser un service ou une intervention.
+            </p>
+            <span className="mt-2 inline-block rounded-xl bg-emerald px-4 py-2 text-center text-[14px] font-medium text-paper group-hover:bg-emerald-dark">
+              S'inscrire comme demandeur de services
+            </span>
+          </a>
+        </div>
+
+        <p className="mt-8 text-center text-[13px] text-ink/50">
+          Déjà un compte ?{" "}
+          <a href="/login" className="font-medium text-emerald-dark hover:underline">
+            Se connecter
+          </a>
+        </p>
       </div>
     </main>
+  );
+}
+
+export default function InscriptionChooserPage() {
+  return (
+    <Suspense fallback={null}>
+      <RoleChooser />
+    </Suspense>
   );
 }

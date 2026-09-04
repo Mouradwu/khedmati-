@@ -161,6 +161,23 @@ export class RequestsService {
   }
 
   /**
+   * Action côté client : marque une demande acceptée comme terminée,
+   * débloquant la possibilité de laisser un avis (section 29). Passe par
+   * IN_PROGRESS automatiquement si nécessaire pour respecter la machine à
+   * états sans exposer cette étape intermédiaire à l'utilisateur.
+   */
+  async markCompleted(id: string, clientId: string) {
+    const request = await this.prisma.serviceRequest.findUnique({ where: { id } });
+    if (!request) throw new NotFoundException("Demande introuvable.");
+    if (request.clientId !== clientId) throw new ForbiddenException();
+
+    if (request.status === "ACCEPTED") {
+      await this.transitionStatus(id, "IN_PROGRESS");
+    }
+    return this.transitionStatus(id, "COMPLETED");
+  }
+
+  /**
    * Point d'entrée unique pour tout changement de statut. Utilisé par ce
    * service ainsi que par le module `validation` (opérateurs) et le module
    * `matching`. Refuse toute transition non prévue par la machine à états.

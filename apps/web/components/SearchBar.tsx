@@ -84,7 +84,7 @@ export function SearchBar() {
     if (user?.role === "CLIENT") {
       router.push(`/mes-demandes/nouvelle${query}`);
     } else if (!user) {
-      router.push(`/inscription${query}`);
+      router.push(`/inscription/client${query}`);
     }
     // Un artisan ou un admin connecté qui tape ici reste sur la homepage —
     // ce parcours de recherche est pensé pour les clients.

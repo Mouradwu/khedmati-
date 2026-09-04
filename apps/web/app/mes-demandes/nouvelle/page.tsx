@@ -28,8 +28,11 @@ function NewRequestForm() {
   const { token } = useAuth();
   const [description, setDescription] = useState("");
   const [urgency, setUrgency] = useState("NORMAL");
+  const [desiredDate, setDesiredDate] = useState("");
+  const [desiredTime, setDesiredTime] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showRecap, setShowRecap] = useState(false);
 
   const professionId = searchParams.get("professionId") ?? undefined;
   const professionName = searchParams.get("professionName");
@@ -39,20 +42,89 @@ function NewRequestForm() {
     if (desc) setDescription(desc);
   }, [searchParams]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleReview = (e: React.FormEvent) => {
     e.preventDefault();
+    setShowRecap(true);
+  };
+
+  const handleConfirm = async () => {
     if (!token) return;
     setError(null);
     setIsSubmitting(true);
     try {
-      const request = await api.createRequest(token, { rawDescription: description, urgency, professionId });
+      const isoDate =
+        desiredDate && desiredTime
+          ? new Date(`${desiredDate}T${desiredTime}:00`).toISOString()
+          : desiredDate
+            ? new Date(`${desiredDate}T09:00:00`).toISOString()
+            : undefined;
+      const request = await api.createRequest(token, {
+        rawDescription: description,
+        urgency,
+        professionId,
+        ...(isoDate ? { desiredDate: isoDate } : {}),
+      } as any);
       router.push(`/mes-demandes/${request.id}`);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Impossible d'envoyer la demande.");
+      setShowRecap(false);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (showRecap) {
+    return (
+      <div className="max-w-xl">
+        <h1 className="font-display text-[26px] italic text-ink">Récapitulatif</h1>
+        <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-line bg-white/60 p-6">
+          {professionName && (
+            <div>
+              <p className="text-[12px] font-medium text-ink/50">Métier</p>
+              <p className="text-[15px] text-ink">{professionName}</p>
+            </div>
+          )}
+          <div>
+            <p className="text-[12px] font-medium text-ink/50">Besoin</p>
+            <p className="text-[15px] text-ink">{description}</p>
+          </div>
+          <div>
+            <p className="text-[12px] font-medium text-ink/50">Urgence</p>
+            <p className="text-[15px] text-ink">{URGENCY_OPTIONS.find((o) => o.value === urgency)?.label}</p>
+          </div>
+          {desiredDate && (
+            <div>
+              <p className="text-[12px] font-medium text-ink/50">Date souhaitée</p>
+              <p className="text-[15px] text-ink">
+                {desiredDate}
+                {desiredTime ? ` à ${desiredTime}` : ""}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {error && (
+          <p className="mt-4 rounded-lg bg-clay-soft px-3 py-2 text-[13px] text-clay-dark">{error}</p>
+        )}
+
+        <div className="mt-6 flex gap-3">
+          <button
+            onClick={() => setShowRecap(false)}
+            className="rounded-xl border border-line px-5 py-2.5 text-[15px] font-medium text-ink hover:border-emerald"
+          >
+            ← Modifier
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={isSubmitting}
+            className="rounded-xl bg-emerald px-5 py-2.5 text-[15px] font-medium text-paper hover:bg-emerald-dark disabled:opacity-60"
+          >
+            {isSubmitting ? "Envoi..." : "Confirmer la demande"}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-xl">
@@ -68,7 +140,7 @@ function NewRequestForm() {
         </p>
       )}
 
-      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4 rounded-2xl border border-line bg-white/60 p-6">
+      <form onSubmit={handleReview} className="mt-6 flex flex-col gap-4 rounded-2xl border border-line bg-white/60 p-6">
         <div className="flex flex-col gap-1.5">
           <label className="text-[13px] font-medium text-ink/70">Votre besoin</label>
           <textarea
@@ -96,16 +168,22 @@ function NewRequestForm() {
           </select>
         </div>
 
-        {error && (
-          <p className="rounded-lg bg-clay-soft px-3 py-2 text-[13px] text-clay-dark">{error}</p>
-        )}
+        <div className="flex gap-3">
+          <div className="flex flex-1 flex-col gap-1.5">
+            <label className="text-[13px] font-medium text-ink/70">Date souhaitée <span className="text-ink/40">(facultatif)</span></label>
+            <input type="date" value={desiredDate} onChange={(e) => setDesiredDate(e.target.value)} className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink focus:border-emerald" />
+          </div>
+          <div className="flex flex-1 flex-col gap-1.5">
+            <label className="text-[13px] font-medium text-ink/70">Heure <span className="text-ink/40">(facultatif)</span></label>
+            <input type="time" value={desiredTime} onChange={(e) => setDesiredTime(e.target.value)} disabled={!desiredDate} className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink focus:border-emerald disabled:opacity-50" />
+          </div>
+        </div>
 
         <button
           type="submit"
-          disabled={isSubmitting}
-          className="rounded-xl bg-emerald px-5 py-2.5 text-[15px] font-medium text-paper hover:bg-emerald-dark disabled:opacity-60"
+          className="rounded-xl bg-emerald px-5 py-2.5 text-[15px] font-medium text-paper hover:bg-emerald-dark"
         >
-          {isSubmitting ? "Envoi..." : "Envoyer ma demande"}
+          Vérifier ma demande
         </button>
 
         <p className="text-[12px] text-ink/40">

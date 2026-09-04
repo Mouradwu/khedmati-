@@ -4,6 +4,7 @@ export class UpdateProfessionalProfileDto {
   @IsOptional() @IsString() firstName?: string;
   @IsOptional() @IsString() lastName?: string;
   @IsOptional() @IsString() businessName?: string;
+  @IsOptional() @IsString() activityType?: string;
   @IsOptional() @IsString() bio?: string;
   @IsOptional() @IsString() photoUrl?: string;
   @IsOptional() @IsString() logoUrl?: string;

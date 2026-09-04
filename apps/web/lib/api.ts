@@ -44,6 +44,7 @@ export const api = {
     role: "CLIENT" | "PROFESSIONAL";
     firstName: string;
     lastName: string;
+    email?: string;
     businessName?: string;
   }) =>
     request<{ accessToken: string; user: { id: string; role: string; phone: string } }>(
@@ -89,6 +90,11 @@ export const api = {
 
   getPublicProfessionalProfile: (id: string) => request<any>(`/users/professionals/${id}`),
 
+  createReview: (
+    token: string,
+    data: { professionalId: string; requestId?: string; ratingOverall: number; comment?: string },
+  ) => request<any>("/reviews", { method: "POST", token, body: JSON.stringify(data) }),
+
   // --- Demandes client (sections 5-7, 27-29) ---
   createRequest: (token: string, data: { rawDescription: string; urgency?: string; professionId?: string }) =>
     request<any>("/requests", { method: "POST", token, body: JSON.stringify(data) }),
@@ -96,6 +102,9 @@ export const api = {
   getMyRequests: (token: string) => request<any[]>("/requests/me", { token }),
 
   getRequest: (token: string, id: string) => request<any>(`/requests/${id}`, { token }),
+
+  markRequestCompleted: (token: string, id: string) =>
+    request<any>(`/requests/${id}/complete`, { method: "POST", token }),
 
   // --- Offres artisan (section 8, 30) ---
   createOffer: (token: string, data: { rawDescription: string }) =>

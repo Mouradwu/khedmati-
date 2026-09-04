@@ -89,7 +89,7 @@ export default function LoginPage() {
 
           <p className="text-center text-[13px] text-ink/50">
             Pas encore de compte ?{" "}
-            <a href="/inscription" className="font-medium text-emerald-dark hover:underline">
+            <a href="/inscription/client" className="font-medium text-emerald-dark hover:underline">
               Créer un compte client
             </a>{" "}
             ·{" "}

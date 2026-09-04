@@ -36,7 +36,7 @@ export default function ArtisanPublicProfilePage() {
     if (user?.role === "CLIENT") {
       router.push(`/mes-demandes/nouvelle?${qs.toString()}`);
     } else if (!user) {
-      router.push(`/inscription?${qs.toString()}`);
+      router.push(`/inscription/client?${qs.toString()}`);
     }
   };
 

@@ -22,6 +22,8 @@ export default function ArtisansPage() {
   const [professionals, setProfessionals] = useState<any[]>([]);
   const [isLoadingCounts, setIsLoadingCounts] = useState(true);
   const [isLoadingList, setIsLoadingList] = useState(false);
+  const [minRating, setMinRating] = useState(0);
+  const [minExperience, setMinExperience] = useState(0);
 
   const wilaya = WILAYAS.find((w) => w.code === wilayaCode) ?? WILAYAS[15];
   const effectiveCoords = useMemo(() => coords ?? { lat: wilaya.lat, lng: wilaya.lng }, [coords, wilaya]);
@@ -77,7 +79,7 @@ export default function ArtisansPage() {
     if (user?.role === "CLIENT") {
       router.push(`/mes-demandes/nouvelle?${params.toString()}`);
     } else if (!user) {
-      router.push(`/inscription?${params.toString()}`);
+      router.push(`/inscription/client?${params.toString()}`);
     }
   };
 
@@ -193,41 +195,72 @@ export default function ArtisansPage() {
         {/* Liste des artisans du métier sélectionné ------------------------------ */}
         {selectedProfession && (
           <div className="mt-8">
-            <h2 className="text-[15px] font-medium text-ink">{selectedProfession.name}s disponibles</h2>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-[15px] font-medium text-ink">{selectedProfession.name}s disponibles</h2>
+              <div className="flex gap-2">
+                <select
+                  value={minRating}
+                  onChange={(e) => setMinRating(Number(e.target.value))}
+                  className="rounded-full border border-line bg-white px-3 py-1.5 text-[13px] text-ink"
+                >
+                  <option value={0}>Toutes les notes</option>
+                  <option value={4}>⭐ 4+</option>
+                  <option value={4.5}>⭐ 4.5+</option>
+                </select>
+                <select
+                  value={minExperience}
+                  onChange={(e) => setMinExperience(Number(e.target.value))}
+                  className="rounded-full border border-line bg-white px-3 py-1.5 text-[13px] text-ink"
+                >
+                  <option value={0}>Toute expérience</option>
+                  <option value={1}>1 an et +</option>
+                  <option value={5}>5 ans et +</option>
+                  <option value={10}>10 ans et +</option>
+                </select>
+              </div>
+            </div>
 
             {isLoadingList && <p className="mt-3 text-[13px] text-ink/50">Chargement...</p>}
 
-            {!isLoadingList && professionals.length === 0 && (
-              <p className="mt-3 text-[13px] text-ink/50">
-                Aucun {selectedProfession.name.toLowerCase()} dans ce rayon pour l'instant.
-              </p>
-            )}
-
-            <div className="mt-3 flex flex-col gap-3">
-              {professionals.map((pro) => (
-                <div
-                  key={pro.id}
-                  className="flex items-center justify-between rounded-xl border border-line bg-white/60 p-4"
-                >
-                  <a href={`/artisans/${pro.id}`} className="flex-1 hover:opacity-80">
-                    <p className="text-[15px] font-medium text-ink">
-                      {pro.firstName} {pro.lastName}
-                      {pro.businessName ? ` — ${pro.businessName}` : ""}
-                    </p>
-                    <p className="mt-1 text-[13px] text-ink/50">
-                      {pro.distanceKm} km · {pro.location?.commune || pro.location?.wilaya}
-                      {pro.ratingCount > 0 ? ` · ★ ${pro.ratingAverage.toFixed(1)}` : ""}
-                    </p>
-                  </a>
-                  <button
-                    onClick={() => requestFrom(pro)}
-                    className="shrink-0 rounded-xl bg-emerald px-4 py-2 text-[14px] font-medium text-paper hover:bg-emerald-dark"
-                  >
-                    Demander une intervention
-                  </button>
+            {(() => {
+              const filtered = professionals.filter(
+                (p) => (p.ratingAverage ?? 0) >= minRating && (p.yearsExperience ?? 0) >= minExperience,
+              );
+              if (!isLoadingList && filtered.length === 0) {
+                return (
+                  <p className="mt-3 text-[13px] text-ink/50">
+                    Aucun {selectedProfession.name.toLowerCase()} ne correspond à ces filtres dans ce rayon.
+                  </p>
+                );
+              }
+              return (
+                <div className="mt-3 flex flex-col gap-3">
+                  {filtered.map((pro) => (
+                    <div
+                      key={pro.id}
+                      className="flex items-center justify-between rounded-xl border border-line bg-white/60 p-4"
+                    >
+                      <a href={`/artisans/${pro.id}`} className="flex-1 hover:opacity-80">
+                        <p className="text-[15px] font-medium text-ink">
+                          {pro.firstName} {pro.lastName}
+                          {pro.businessName ? ` — ${pro.businessName}` : ""}
+                        </p>
+                        <p className="mt-1 text-[13px] text-ink/50">
+                          {pro.distanceKm} km · {pro.location?.commune || pro.location?.wilaya}
+                          {pro.ratingCount > 0 ? ` · ★ ${pro.ratingAverage.toFixed(1)}` : ""}
+                        </p>
+                      </a>
+                      <button
+                        onClick={() => requestFrom(pro)}
+                        className="shrink-0 rounded-xl bg-emerald px-4 py-2 text-[14px] font-medium text-paper hover:bg-emerald-dark"
+                      >
+                        Demander une intervention
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              );
+            })()}
           </div>
         )}
       </div>

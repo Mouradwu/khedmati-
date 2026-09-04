@@ -330,6 +330,7 @@ model ProfessionalProfile {
   firstName          String
   lastName            String
   businessName       String?
+  activityType       String? // "INDEPENDENT" | "COMPANY" | "AUTO_ENTREPRENEUR" | "WORKSHOP" | "OTHER" (section 4)
   photoUrl           String?
   logoUrl            String?
   bio                String?

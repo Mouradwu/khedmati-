@@ -33,6 +33,13 @@ export class RequestsController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.CLIENT)
+  @Post(":id/complete")
+  markCompleted(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.requestsService.markCompleted(id, user.id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.CLIENT)
   @Patch(":id")
   updateDraft(
     @Param("id") id: string,

@@ -12,6 +12,7 @@ type RegisterInput = {
   role: "CLIENT" | "PROFESSIONAL";
   firstName: string;
   lastName: string;
+  email?: string;
   businessName?: string;
 };
 
