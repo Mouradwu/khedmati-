@@ -93,7 +93,7 @@ export class RequestsService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, requester?: { id: string; role: string }) {
     const request = await this.prisma.serviceRequest.findUnique({
       where: { id },
       include: {
@@ -101,11 +101,46 @@ export class RequestsService {
         specialty: true,
         attachments: true,
         questions: { include: { answer: true } },
-        matches: { include: { professional: true } },
+        matches: {
+          include: {
+            professional: { include: { user: { select: { phone: true, email: true } } } },
+          },
+        },
       },
     });
     if (!request) throw new NotFoundException("Demande introuvable.");
-    return request;
+
+    // Autorisation (section 21, 35) : seuls le client propriétaire, un
+    // professionnel matché sur cette demande, ou un opérateur/admin peuvent
+    // consulter le détail — jamais un tiers non concerné.
+    if (requester && !["ADMIN", "SUPER_ADMIN", "OPERATOR"].includes(requester.role)) {
+      const isOwner = request.clientId === requester.id;
+      const isMatchedProfessional = request.matches.some(
+        (m) => m.professional.userId === requester.id,
+      );
+      if (!isOwner && !isMatchedProfessional) {
+        throw new ForbiddenException("Vous n'avez pas accès à cette demande.");
+      }
+    }
+
+    // Règle de confidentialité stricte (section 13, 21, 35) : le contact
+    // (téléphone/email) d'un artisan n'est JAMAIS renvoyé tant que le match
+    // correspondant n'est pas ACCEPTED — vérifié ici, côté serveur, pas
+    // seulement caché côté interface. Impossible à contourner en appelant
+    // l'API directement.
+    const matches = request.matches.map((match) => {
+      const { user, ...professionalPublic } = match.professional;
+      return {
+        ...match,
+        professional: {
+          ...professionalPublic,
+          phone: match.status === "ACCEPTED" ? user.phone : null,
+          email: match.status === "ACCEPTED" ? user.email : null,
+        },
+      };
+    });
+
+    return { ...request, matches };
   }
 
   /**

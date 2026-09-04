@@ -10,6 +10,7 @@ export default function ArtisanProfilePage() {
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedProfessionIds, setSelectedProfessionIds] = useState<Set<string>>(new Set());
   const [radiusKm, setRadiusKm] = useState(10);
+  const [isAcceptingRequests, setIsAcceptingRequests] = useState(true);
   const [location, setLocation] = useState<LocationValue | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -17,7 +18,18 @@ export default function ArtisanProfilePage() {
 
   useEffect(() => {
     api.getCategoryTree().then(setCategories).catch(() => setCategories([]));
-  }, []);
+    if (token) {
+      api
+        .getMe(token)
+        .then((me) => {
+          if (me.professionalProfile) {
+            setIsAcceptingRequests(me.professionalProfile.isAcceptingRequests ?? true);
+            setRadiusKm(me.professionalProfile.interventionRadiusKm ?? 10);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [token]);
 
   const toggleProfession = (id: string) => {
     setSelectedProfessionIds((prev) => {
@@ -43,6 +55,7 @@ export default function ArtisanProfilePage() {
         ...(locationId ? { locationId } : {}),
         interventionRadiusKm: radiusKm,
         professionIds: Array.from(selectedProfessionIds),
+        isAcceptingRequests,
       });
       setSaved(true);
     } catch (err) {
@@ -61,6 +74,34 @@ export default function ArtisanProfilePage() {
       </p>
 
       <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-6 rounded-2xl border border-line bg-white/60 p-6">
+        <div>
+          <h2 className="text-[15px] font-medium text-ink">Statut de disponibilité</h2>
+          <div className="mt-2 flex gap-2">
+            <button
+              type="button"
+              onClick={() => setIsAcceptingRequests(true)}
+              className={`rounded-full border px-4 py-2 text-[14px] font-medium transition-colors ${
+                isAcceptingRequests
+                  ? "border-emerald bg-emerald-soft text-emerald-dark"
+                  : "border-line bg-white text-ink/60 hover:border-emerald"
+              }`}
+            >
+              🟢 Disponible pour de nouvelles demandes
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsAcceptingRequests(false)}
+              className={`rounded-full border px-4 py-2 text-[14px] font-medium transition-colors ${
+                !isAcceptingRequests
+                  ? "border-clay bg-clay-soft text-clay-dark"
+                  : "border-line bg-white text-ink/60 hover:border-clay"
+              }`}
+            >
+              🔴 Indisponible actuellement
+            </button>
+          </div>
+        </div>
+
         <div>
           <h2 className="text-[15px] font-medium text-ink">Vos métiers</h2>
           <p className="mt-1 text-[13px] text-ink/50">Sélectionnez un ou plusieurs corps de métier.</p>

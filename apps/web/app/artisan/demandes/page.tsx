@@ -4,12 +4,21 @@ import { useEffect, useState } from "react";
 import { useAuth, ApiError } from "@/lib/auth";
 import { api } from "@/lib/api";
 
+const DECLINE_REASONS = [
+  "Je ne suis pas disponible",
+  "Service non proposé",
+  "Horaire incompatible",
+  "Zone trop éloignée",
+  "Autre",
+];
+
 export default function ArtisanRequestsPage() {
   const { token } = useAuth();
   const [matches, setMatches] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [decliningId, setDecliningId] = useState<string | null>(null);
 
   const load = () => {
     if (!token) return;
@@ -22,11 +31,25 @@ export default function ArtisanRequestsPage() {
 
   useEffect(load, [token]);
 
-  const respond = async (matchId: string, accepted: boolean) => {
+  const accept = async (matchId: string) => {
     if (!token) return;
     setBusyId(matchId);
     try {
-      await api.respondToMatch(token, matchId, accepted);
+      await api.respondToMatch(token, matchId, true);
+      load();
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Impossible d'envoyer la réponse.");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const decline = async (matchId: string, reason: string) => {
+    if (!token) return;
+    setBusyId(matchId);
+    try {
+      await api.respondToMatch(token, matchId, false, reason);
+      setDecliningId(null);
       load();
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Impossible d'envoyer la réponse.");
@@ -75,21 +98,45 @@ export default function ArtisanRequestsPage() {
               </span>
             </div>
 
-            {m.status === "SUGGESTED" && (
+            {m.status === "SUGGESTED" && decliningId !== m.id && (
               <div className="mt-4 flex gap-2">
                 <button
-                  onClick={() => respond(m.id, true)}
+                  onClick={() => accept(m.id)}
                   disabled={busyId === m.id}
                   className="rounded-xl bg-emerald px-4 py-2 text-[14px] font-medium text-paper hover:bg-emerald-dark disabled:opacity-60"
                 >
-                  Accepter
+                  🟢 Accepter
                 </button>
                 <button
-                  onClick={() => respond(m.id, false)}
+                  onClick={() => setDecliningId(m.id)}
                   disabled={busyId === m.id}
                   className="rounded-xl border border-line px-4 py-2 text-[14px] font-medium text-ink/70 hover:border-clay hover:text-clay-dark disabled:opacity-60"
                 >
-                  Décliner
+                  🔴 Décliner
+                </button>
+              </div>
+            )}
+
+            {m.status === "SUGGESTED" && decliningId === m.id && (
+              <div className="mt-4 rounded-xl border border-line bg-paperDim/50 p-4">
+                <p className="text-[13px] font-medium text-ink/70">Pourquoi déclinez-vous ?</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {DECLINE_REASONS.map((reason) => (
+                    <button
+                      key={reason}
+                      onClick={() => decline(m.id, reason)}
+                      disabled={busyId === m.id}
+                      className="rounded-full border border-line bg-white px-3 py-1.5 text-[13px] text-ink hover:border-clay disabled:opacity-60"
+                    >
+                      {reason}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setDecliningId(null)}
+                  className="mt-2 text-[12px] text-ink/40 hover:text-ink/60"
+                >
+                  Annuler
                 </button>
               </div>
             )}

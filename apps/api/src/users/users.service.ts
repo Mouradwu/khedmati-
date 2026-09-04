@@ -69,7 +69,9 @@ export class UsersService {
       include: {
         professions: { include: { profession: true } },
         specialties: { include: { specialty: true } },
+        services: { include: { service: true } },
         galleryItems: true,
+        reviews: { orderBy: { createdAt: "desc" }, take: 10 },
         // La localisation exacte n'est jamais renvoyée ici (section 11) —
         // seule la commune/wilaya est exposée publiquement.
         location: { select: { wilaya: true, daira: true, commune: true } },

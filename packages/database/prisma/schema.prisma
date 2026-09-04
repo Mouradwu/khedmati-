@@ -343,6 +343,7 @@ model ProfessionalProfile {
   indicativePricing  String? // texte libre facultatif, jamais utilisé pour calcul
 
   isVerifiedBadge    Boolean   @default(false) // ne JAMAIS activer sans preuve réelle (section 32)
+  isAcceptingRequests Boolean  @default(true) // statut 🟢 Disponible / 🔴 Indisponible
 
   ratingAverage      Float     @default(0)
   ratingCount        Int       @default(0)

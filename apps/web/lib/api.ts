@@ -87,6 +87,8 @@ export const api = {
 
   getCategoryTree: () => request<any[]>("/categories"),
 
+  getPublicProfessionalProfile: (id: string) => request<any>(`/users/professionals/${id}`),
+
   // --- Demandes client (sections 5-7, 27-29) ---
   createRequest: (token: string, data: { rawDescription: string; urgency?: string; professionId?: string }) =>
     request<any>("/requests", { method: "POST", token, body: JSON.stringify(data) }),

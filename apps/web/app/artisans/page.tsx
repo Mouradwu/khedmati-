@@ -209,7 +209,7 @@ export default function ArtisansPage() {
                   key={pro.id}
                   className="flex items-center justify-between rounded-xl border border-line bg-white/60 p-4"
                 >
-                  <div>
+                  <a href={`/artisans/${pro.id}`} className="flex-1 hover:opacity-80">
                     <p className="text-[15px] font-medium text-ink">
                       {pro.firstName} {pro.lastName}
                       {pro.businessName ? ` — ${pro.businessName}` : ""}
@@ -218,7 +218,7 @@ export default function ArtisansPage() {
                       {pro.distanceKm} km · {pro.location?.commune || pro.location?.wilaya}
                       {pro.ratingCount > 0 ? ` · ★ ${pro.ratingAverage.toFixed(1)}` : ""}
                     </p>
-                  </div>
+                  </a>
                   <button
                     onClick={() => requestFrom(pro)}
                     className="shrink-0 rounded-xl bg-emerald px-4 py-2 text-[14px] font-medium text-paper hover:bg-emerald-dark"

@@ -39,7 +39,7 @@ export class LocationsService {
     radiusKm: number;
   }) {
     const professionals = await this.prisma.professionalProfile.findMany({
-      where: { location: { isNot: null } },
+      where: { location: { isNot: null }, isAcceptingRequests: true },
       include: {
         location: { select: { latitude: true, longitude: true } },
         professions: { include: { profession: { include: { category: true } } } },
@@ -102,6 +102,7 @@ export class LocationsService {
     const professionals = await this.prisma.professionalProfile.findMany({
       where: {
         location: { isNot: null },
+        isAcceptingRequests: true, // 🟢 uniquement les disponibles (section 9)
         ...(params.professionId
           ? { professions: { some: { professionId: params.professionId } } }
           : {}),

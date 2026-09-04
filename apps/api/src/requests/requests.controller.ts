@@ -27,8 +27,8 @@ export class RequestsController {
 
   @UseGuards(JwtAuthGuard)
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.requestsService.findOne(id);
+  findOne(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.requestsService.findOne(id, user);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

@@ -72,18 +72,55 @@ export default function RequestDetailPage() {
         <div className="mt-6">
           <h2 className="text-[13px] font-medium text-ink/70">Professionnels proposés</h2>
           <div className="mt-2 flex flex-col gap-2">
-            {request.matches.map((m: any) => (
-              <div key={m.id} className="rounded-xl border border-line bg-white/60 p-4">
-                <p className="text-[15px] text-ink">
-                  {m.professional?.firstName} {m.professional?.lastName}
-                  {m.professional?.businessName ? ` — ${m.professional.businessName}` : ""}
-                </p>
-                <p className="mt-1 text-[13px] text-ink/50">
-                  Score de correspondance : {m.score}/100
-                  {m.distanceKm != null ? ` · ${m.distanceKm} km` : ""}
-                </p>
-              </div>
-            ))}
+            {request.matches.map((m: any) => {
+              const isAccepted = m.status === "ACCEPTED";
+              const isDeclined = m.status === "DECLINED";
+              return (
+                <div key={m.id} className="rounded-xl border border-line bg-white/60 p-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-[15px] text-ink">
+                        {m.professional?.firstName} {m.professional?.lastName}
+                        {m.professional?.businessName ? ` — ${m.professional.businessName}` : ""}
+                      </p>
+                      <p className="mt-1 text-[13px] text-ink/50">
+                        Score de correspondance : {m.score}/100
+                        {m.distanceKm != null ? ` · ${m.distanceKm} km` : ""}
+                      </p>
+                    </div>
+                    {isDeclined && (
+                      <span className="rounded-full bg-paperDim px-3 py-1 text-[12px] text-ink/50">
+                        Non disponible
+                      </span>
+                    )}
+                  </div>
+
+                  {isAccepted && m.professional?.phone && (
+                    <div className="mt-3 rounded-lg bg-emerald-soft p-3">
+                      <p className="text-[13px] font-medium text-emerald-dark">
+                        🔓 Contact débloqué — l'artisan a accepté votre demande
+                      </p>
+                      <div className="mt-2 flex gap-2">
+                        <a
+                          href={`tel:${m.professional.phone}`}
+                          className="rounded-xl bg-emerald px-4 py-2 text-[13px] font-medium text-paper hover:bg-emerald-dark"
+                        >
+                          📞 Appeler
+                        </a>
+                        <a
+                          href={`https://wa.me/${m.professional.phone.replace(/[^0-9]/g, "")}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rounded-xl border border-emerald px-4 py-2 text-[13px] font-medium text-emerald-dark hover:bg-emerald-soft"
+                        >
+                          💬 WhatsApp
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

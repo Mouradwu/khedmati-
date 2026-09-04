@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { LocationsService } from "../locations/locations.service";
+import { ConversationsService } from "../conversations/conversations.service";
 
 /**
  * Moteur de matching (section 26). Les poids par défaut reproduisent
@@ -17,6 +18,7 @@ export class MatchingService {
   constructor(
     private prisma: PrismaService,
     private locationsService: LocationsService,
+    private conversationsService: ConversationsService,
   ) {}
 
   private async getActiveConfig() {
@@ -151,13 +153,26 @@ export class MatchingService {
   }
 
   async respondToMatch(matchId: string, accepted: boolean, message?: string) {
-    const match = await this.prisma.requestMatch.findUnique({ where: { id: matchId } });
+    const match = await this.prisma.requestMatch.findUnique({
+      where: { id: matchId },
+      include: { request: true, professional: true },
+    });
     if (!match) throw new NotFoundException("Match introuvable.");
 
     await this.prisma.requestMatch.update({
       where: { id: matchId },
       data: { status: accepted ? "ACCEPTED" : "DECLINED" },
     });
+
+    // Acceptation = déblocage du contact (section 20-21, règle centrale du
+    // parcours demandeur/artisan) : on ouvre la conversation associée.
+    if (accepted) {
+      await this.conversationsService.unlockAfterAcceptance({
+        requestId: match.requestId,
+        clientId: match.request.clientId,
+        professionalUserId: match.professional.userId,
+      });
+    }
 
     return this.prisma.requestResponse.create({
       data: { matchId, accepted, message },

@@ -1,4 +1,4 @@
-import { IsArray, IsInt, IsOptional, IsString, Min } from "class-validator";
+import { IsArray, IsBoolean, IsInt, IsOptional, IsString, Min } from "class-validator";
 
 export class UpdateProfessionalProfileDto {
   @IsOptional() @IsString() firstName?: string;
@@ -8,6 +8,9 @@ export class UpdateProfessionalProfileDto {
   @IsOptional() @IsString() photoUrl?: string;
   @IsOptional() @IsString() logoUrl?: string;
   @IsOptional() @IsString() locationId?: string;
+
+  @IsOptional() @IsBoolean()
+  isAcceptingRequests?: boolean; // statut 🟢 Disponible / 🔴 Indisponible
 
   @IsOptional() @IsInt() @Min(1)
   interventionRadiusKm?: number;
