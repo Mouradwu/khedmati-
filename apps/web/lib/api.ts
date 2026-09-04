@@ -163,4 +163,10 @@ export const api = {
     request<any>(`/admin/users/${userId}/suspend`, { method: "POST", token }),
   activateUser: (token: string, userId: string) =>
     request<any>(`/admin/users/${userId}/activate`, { method: "POST", token }),
+
+  // --- Notifications (section 17) ---
+  getNotifications: (token: string) => request<any[]>("/notifications/me", { token }),
+  getUnreadNotificationCount: (token: string) => request<number>("/notifications/me/unread-count", { token }),
+  markNotificationRead: (token: string, id: string) =>
+    request<any>(`/notifications/${id}/read`, { method: "POST", token }),
 };

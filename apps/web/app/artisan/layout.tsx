@@ -2,6 +2,7 @@
 
 import { useAuth, useRequireRole } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import { NotificationBell } from "@/components/NotificationBell";
 
 export default function ArtisanAreaLayout({ children }: { children: React.ReactNode }) {
   const { isAuthorized, isLoading } = useRequireRole(["PROFESSIONAL"]);
@@ -37,6 +38,7 @@ export default function ArtisanAreaLayout({ children }: { children: React.ReactN
             <a href="/artisan/profil" className="text-ink/70 hover:text-ink">
               Mon profil
             </a>
+            <NotificationBell />
             <span className="text-ink/40">{user.phone}</span>
             <button
               onClick={() => {

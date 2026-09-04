@@ -29,8 +29,8 @@ export class NotificationsService {
         title: params.title,
         body: params.body,
         // `as any` volontaire ici : Prisma type les champs Json avec un
-        // namespace (Prisma.InputJsonValue) qui ne se propage pas de facon
-        // fiable a travers la reexportation `export *` de @khedmati/database.
+        // namespace (Prisma.InputJsonValue) qui ne se propage pas de façon
+        // fiable à travers la réexportation `export *` de @khedmati/database.
         // meta reste un simple objet JSON classique en pratique.
         meta: params.meta as any,
         status: "PENDING",
@@ -44,7 +44,7 @@ export class NotificationsService {
         data: { status: "SENT", sentAt: new Date() },
       });
     } catch (err) {
-      this.logger.error(`Echec d'envoi de la notification ${notification.id}`, err as Error);
+      this.logger.error(`Échec d'envoi de la notification ${notification.id}`, err as Error);
       return this.prisma.notification.update({
         where: { id: notification.id },
         data: { status: "FAILED" },
@@ -53,8 +53,29 @@ export class NotificationsService {
   }
 
   // TODO Phase 2 : brancher FCM (push mobile), un provider SMS et un
-  // provider email reels derriere cette meme signature.
+  // provider email réels derrière cette même signature.
   private async dispatch(id: string, channel: NotificationChannel, title: string, body: string) {
-    this.logger.log(`[MOCK][${channel}] ${title} - ${body} (notification ${id})`);
+    this.logger.log(`[MOCK][${channel}] ${title} — ${body} (notification ${id})`);
+  }
+
+  async listForUser(userId: string) {
+    return this.prisma.notification.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    });
+  }
+
+  async markAsRead(id: string, userId: string) {
+    return this.prisma.notification.updateMany({
+      where: { id, userId },
+      data: { status: "READ", readAt: new Date() },
+    });
+  }
+
+  async countUnread(userId: string) {
+    return this.prisma.notification.count({
+      where: { userId, status: { not: "READ" } },
+    });
   }
 }

@@ -2,6 +2,7 @@
 
 import { useAuth, useRequireRole } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import { NotificationBell } from "@/components/NotificationBell";
 
 export default function ClientAreaLayout({ children }: { children: React.ReactNode }) {
   const { isAuthorized, isLoading } = useRequireRole(["CLIENT"]);
@@ -36,6 +37,7 @@ export default function ClientAreaLayout({ children }: { children: React.ReactNo
             <a href="/mes-demandes/profil" className="text-ink/70 hover:text-ink">
               Ma localisation
             </a>
+            <NotificationBell />
             <span className="text-ink/40">{user.phone}</span>
             <button
               onClick={() => {

@@ -3,6 +3,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { LocationsService } from "../locations/locations.service";
 import { ConversationsService } from "../conversations/conversations.service";
 import { RequestsService } from "../requests/requests.service";
+import { NotificationsService } from "../notifications/notifications.service";
 
 /**
  * Moteur de matching (section 26). Les poids par défaut reproduisent
@@ -21,6 +22,7 @@ export class MatchingService {
     private locationsService: LocationsService,
     private conversationsService: ConversationsService,
     private requestsService: RequestsService,
+    private notificationsService: NotificationsService,
   ) {}
 
   private async getActiveConfig() {
@@ -124,6 +126,12 @@ export class MatchingService {
       .sort((a, b) => b.score - a.score)
       .slice(0, 20);
 
+    const existingMatches = await this.prisma.requestMatch.findMany({
+      where: { requestId },
+      select: { professionalId: true },
+    });
+    const existingMatchProfessionalIds = new Set(existingMatches.map((m) => m.professionalId));
+
     await this.prisma.$transaction(
       eligible.map((s) =>
         this.prisma.requestMatch.upsert({
@@ -147,6 +155,28 @@ export class MatchingService {
       });
     }
 
+    // Notification des artisans nouvellement proposés (section 17) — les
+    // nouveaux (créés, pas juste mis à jour) uniquement, pour ne pas
+    // renotifier à chaque recalcul de score.
+    const newlyMatched = eligible.filter(
+      (s) => !existingMatchProfessionalIds.has(s.professionalId),
+    );
+    for (const s of newlyMatched) {
+      const pro = await this.prisma.professionalProfile.findUnique({
+        where: { id: s.professionalId },
+        select: { userId: true },
+      });
+      if (pro) {
+        await this.notificationsService.notify({
+          userId: pro.userId,
+          channel: "IN_APP",
+          title: "Nouvelle demande d'intervention",
+          body: `Une demande correspond à votre profil (${request.rawDescription.slice(0, 80)}).`,
+          meta: { requestId },
+        });
+      }
+    }
+
     return this.prisma.requestMatch.findMany({
       where: { requestId },
       orderBy: { score: "desc" },
@@ -165,6 +195,8 @@ export class MatchingService {
       where: { id: matchId },
       data: { status: accepted ? "ACCEPTED" : "DECLINED" },
     });
+
+    const artisanName = match.professional.businessName || `${match.professional.firstName} ${match.professional.lastName}`;
 
     // Acceptation = déblocage du contact (section 20-21, règle centrale du
     // parcours demandeur/artisan) : on ouvre la conversation associée, et
@@ -185,6 +217,23 @@ export class MatchingService {
       } else if (currentStatus === "PROFESSIONAL_CONTACTED") {
         await this.requestsService.transitionStatus(match.requestId, "ACCEPTED");
       }
+
+      await this.notificationsService.notify({
+        userId: match.request.clientId,
+        channel: "IN_APP",
+        title: "Demande acceptée",
+        body: `${artisanName} a accepté votre demande. Le contact est débloqué.`,
+        meta: { requestId: match.requestId },
+      });
+    } else {
+      // section 19 : notifier le refus et inviter à voir d'autres artisans.
+      await this.notificationsService.notify({
+        userId: match.request.clientId,
+        channel: "IN_APP",
+        title: "Artisan non disponible",
+        body: `${artisanName} n'est pas disponible pour cette demande. D'autres artisans peuvent être proposés.`,
+        meta: { requestId: match.requestId },
+      });
     }
 
     return this.prisma.requestResponse.create({
