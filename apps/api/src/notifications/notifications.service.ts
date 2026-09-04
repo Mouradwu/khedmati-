@@ -28,7 +28,7 @@ export class NotificationsService {
         channel: params.channel,
         title: params.title,
         body: params.body,
-        meta: params.meta,
+        meta: params.meta as Prisma.InputJsonValue | undefined,
         status: "PENDING",
       },
     });
