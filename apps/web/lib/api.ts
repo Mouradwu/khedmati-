@@ -53,6 +53,13 @@ export const api = {
 
   getMe: (token: string) => request<any>("/users/me", { token }),
 
+  updateClientProfile: (token: string, data: Record<string, unknown>) =>
+    request<any>("/users/me/client-profile", {
+      method: "PATCH",
+      token,
+      body: JSON.stringify(data),
+    }),
+
   updateProfessionalProfile: (token: string, data: Record<string, unknown>) =>
     request<any>("/users/me/professional-profile", {
       method: "PATCH",
@@ -60,8 +67,28 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
+  // --- Localisation (sections 9-11, 49) ---
+  createLocation: (
+    token: string,
+    data: { latitude: number; longitude: number; wilaya: string; daira?: string; commune?: string },
+  ) => request<any>("/locations", { method: "POST", token, body: JSON.stringify(data) }),
+
+  findNearbyProfessionals: (lat: number, lng: number, radiusKm: number, professionId?: string) =>
+    request<any[]>(
+      `/locations/nearby?lat=${lat}&lng=${lng}&radiusKm=${radiusKm}${
+        professionId ? `&professionId=${professionId}` : ""
+      }`,
+    ),
+
+  getNearbyCounts: (lat: number, lng: number, radiusKm: number) =>
+    request<Array<{ profession: any; count: number }>>(
+      `/locations/nearby-counts?lat=${lat}&lng=${lng}&radiusKm=${radiusKm}`,
+    ),
+
+  getCategoryTree: () => request<any[]>("/categories"),
+
   // --- Demandes client (sections 5-7, 27-29) ---
-  createRequest: (token: string, data: { rawDescription: string; urgency?: string }) =>
+  createRequest: (token: string, data: { rawDescription: string; urgency?: string; professionId?: string }) =>
     request<any>("/requests", { method: "POST", token, body: JSON.stringify(data) }),
 
   getMyRequests: (token: string) => request<any[]>("/requests/me", { token }),
@@ -73,6 +100,19 @@ export const api = {
     request<any>("/offers", { method: "POST", token, body: JSON.stringify(data) }),
 
   getMyOffers: (token: string) => request<any[]>("/offers/me", { token }),
+
+  // --- Matching (section 26) ---
+  getMyMatches: (token: string) => request<any[]>("/matching/me", { token }),
+
+  respondToMatch: (token: string, matchId: string, accepted: boolean, message?: string) =>
+    request<any>(`/matching/${matchId}/respond`, {
+      method: "POST",
+      token,
+      body: JSON.stringify({ accepted, message }),
+    }),
+
+  runMatching: (token: string, requestId: string) =>
+    request<any>(`/matching/requests/${requestId}/run`, { method: "POST", token }),
 
   getQueue: (token: string, priority?: string) =>
     request<any[]>(`/validation/queue${priority ? `?priority=${priority}` : ""}`, { token }),

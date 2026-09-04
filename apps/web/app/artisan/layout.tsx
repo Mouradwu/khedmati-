@@ -25,11 +25,17 @@ export default function ArtisanAreaLayout({ children }: { children: React.ReactN
             <span className="text-[13px] text-ink/50">â€” Espace artisan</span>
           </a>
           <nav className="flex items-center gap-4 text-[14px]">
+            <a href="/artisan/demandes" className="text-ink/70 hover:text-ink">
+              Demandes reÃ§ues
+            </a>
             <a href="/artisan/offres" className="text-ink/70 hover:text-ink">
               Mes offres
             </a>
             <a href="/artisan/offres/nouvelle" className="text-ink/70 hover:text-ink">
               Nouvelle offre
+            </a>
+            <a href="/artisan/profil" className="text-ink/70 hover:text-ink">
+              Mon profil
             </a>
             <span className="text-ink/40">{user.phone}</span>
             <button

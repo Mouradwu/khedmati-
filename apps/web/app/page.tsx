@@ -56,9 +56,12 @@ export default async function HomePage() {
             <h2 className="font-display text-[26px] italic text-ink">
               Trouver un professionnel autour de moi
             </h2>
-            <button className="w-fit rounded-full bg-emerald px-4 py-2 text-[14px] font-medium text-paper hover:bg-emerald-dark">
+            <a
+              href="/artisans"
+              className="w-fit rounded-full bg-emerald px-4 py-2 text-[14px] font-medium text-paper hover:bg-emerald-dark"
+            >
               ðŸ“ Utiliser ma position
-            </button>
+            </a>
           </div>
 
           <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">

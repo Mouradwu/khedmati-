@@ -85,6 +85,12 @@ export default function CaseDetailPage() {
     setError(null);
     try {
       await api.publish(token, caseData.serviceRequestId, caseData.offerId);
+      // Publication + lancement immÃ©diat de la recherche d'artisans
+      // correspondants â€” l'utilisateur n'a pas Ã  dÃ©clencher deux actions
+      // sÃ©parÃ©es pour un seul geste mÃ©tier.
+      if (caseData.serviceRequestId) {
+        await api.runMatching(token, caseData.serviceRequestId);
+      }
       load();
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Impossible de publier.");
@@ -218,7 +224,7 @@ export default function CaseDetailPage() {
             disabled={isBusy}
             className="mt-3 rounded-xl border border-emerald bg-emerald-soft px-5 py-2.5 text-[15px] font-medium text-emerald-dark hover:bg-emerald hover:text-paper disabled:opacity-60"
           >
-            {isBusy ? "Publication..." : "ðŸš€ Publier"}
+            {isBusy ? "Publication..." : "ðŸš€ Publier et rechercher des artisans"}
           </button>
         )}
       </div>

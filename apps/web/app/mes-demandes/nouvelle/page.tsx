@@ -31,6 +31,9 @@ function NewRequestForm() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const professionId = searchParams.get("professionId") ?? undefined;
+  const professionName = searchParams.get("professionName");
+
   useEffect(() => {
     const desc = searchParams.get("desc");
     if (desc) setDescription(desc);
@@ -42,7 +45,7 @@ function NewRequestForm() {
     setError(null);
     setIsSubmitting(true);
     try {
-      const request = await api.createRequest(token, { rawDescription: description, urgency });
+      const request = await api.createRequest(token, { rawDescription: description, urgency, professionId });
       router.push(`/mes-demandes/${request.id}`);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Impossible d'envoyer la demande.");
@@ -58,6 +61,12 @@ function NewRequestForm() {
         DÃ©crivez votre problÃ¨me avec vos mots â€” en franÃ§ais, en arabe ou en darija. Un opÃ©rateur
         KHEDMATI vous appellera pour confirmer avant toute mise en relation.
       </p>
+
+      {professionName && (
+        <p className="mt-3 inline-block rounded-full bg-emerald-soft px-3 py-1 text-[13px] font-medium text-emerald-dark">
+          MÃ©tier prÃ©sÃ©lectionnÃ© : {professionName}
+        </p>
+      )}
 
       <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4 rounded-2xl border border-line bg-white/60 p-6">
         <div className="flex flex-col gap-1.5">

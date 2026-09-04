@@ -10,6 +10,9 @@ export function HeaderNav() {
       <a href="#metiers" className="hover:text-ink">
         MÃ©tiers
       </a>
+      <a href="/artisans" className="hover:text-ink">
+        Artisans autour de moi
+      </a>
 
       {!user && (
         <>

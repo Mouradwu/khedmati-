@@ -30,6 +30,12 @@ export default function ClientAreaLayout({ children }: { children: React.ReactNo
             <a href="/mes-demandes/nouvelle" className="text-ink/70 hover:text-ink">
               Nouvelle demande
             </a>
+            <a href="/artisans" className="text-ink/70 hover:text-ink">
+              Artisans autour de moi
+            </a>
+            <a href="/mes-demandes/profil" className="text-ink/70 hover:text-ink">
+              Ma localisation
+            </a>
             <span className="text-ink/40">{user.phone}</span>
             <button
               onClick={() => {
