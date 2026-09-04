@@ -75,7 +75,7 @@ export function LocationForm({
         >
           {WILAYAS.map((w) => (
             <option key={w.code} value={w.code}>
-              {w.code} â€” {w.name}
+              {w.code} — {w.name}
             </option>
           ))}
         </select>
@@ -84,7 +84,7 @@ export function LocationForm({
       <div className="flex gap-3">
         <div className="flex flex-1 flex-col gap-1.5">
           <label className="text-[13px] font-medium text-ink/70">
-            DaÃ¯ra <span className="text-ink/40">(facultatif)</span>
+            Daïra <span className="text-ink/40">(facultatif)</span>
           </label>
           <input
             value={daira}
@@ -122,18 +122,18 @@ export function LocationForm({
         {gpsStatus === "locating"
           ? "Localisation..."
           : gpsStatus === "done"
-            ? "âœ“ Position GPS utilisÃ©e"
-            : "ðŸ“ Utiliser ma position GPS prÃ©cise"}
+            ? "✓ Position GPS utilisée"
+            : "📍 Utiliser ma position GPS précise"}
       </button>
       {gpsStatus === "error" && (
         <p className="text-[12px] text-clay-dark">
-          Position GPS indisponible â€” la position approximative du chef-lieu de wilaya sera
-          utilisÃ©e Ã  la place.
+          Position GPS indisponible — la position approximative du chef-lieu de wilaya sera
+          utilisée à la place.
         </p>
       )}
       <p className="text-[12px] text-ink/40">
-        Sans GPS, une position approximative (chef-lieu de {wilaya.name}) est utilisÃ©e â€” assez
-        prÃ©cise pour trouver des professionnels dans la wilaya, moins pour un rayon trÃ¨s serrÃ©.
+        Sans GPS, une position approximative (chef-lieu de {wilaya.name}) est utilisée — assez
+        précise pour trouver des professionnels dans la wilaya, moins pour un rayon très serré.
       </p>
     </div>
   );

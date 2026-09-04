@@ -6,12 +6,12 @@ import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api";
 
 const PRIORITY_LABELS: Record<string, { label: string; icon: string; className: string }> = {
-  PRIORITY: { label: "Prioritaire", icon: "ðŸ”´", className: "border-clay/40 bg-clay-soft text-clay-dark" },
-  TO_CALL: { label: "Ã€ appeler", icon: "ðŸŸ ", className: "border-gold/40 bg-gold-soft text-ink" },
-  CALLBACK_REQUESTED: { label: "Rappel demandÃ©", icon: "ðŸŸ¡", className: "border-gold/40 bg-gold-soft text-ink" },
-  VALIDATED: { label: "ValidÃ©", icon: "ðŸŸ¢", className: "border-emerald/40 bg-emerald-soft text-emerald-dark" },
-  WAITING_FOR_INFO: { label: "En attente d'info", icon: "ðŸ”µ", className: "border-line bg-white text-ink/70" },
-  REFUSED: { label: "RefusÃ©", icon: "âš«", className: "border-line bg-paperDim text-ink/50" },
+  PRIORITY: { label: "Prioritaire", icon: "🔴", className: "border-clay/40 bg-clay-soft text-clay-dark" },
+  TO_CALL: { label: "À appeler", icon: "🟠", className: "border-gold/40 bg-gold-soft text-ink" },
+  CALLBACK_REQUESTED: { label: "Rappel demandé", icon: "🟡", className: "border-gold/40 bg-gold-soft text-ink" },
+  VALIDATED: { label: "Validé", icon: "🟢", className: "border-emerald/40 bg-emerald-soft text-emerald-dark" },
+  WAITING_FOR_INFO: { label: "En attente d'info", icon: "🔵", className: "border-line bg-white text-ink/70" },
+  REFUSED: { label: "Refusé", icon: "⚫", className: "border-line bg-paperDim text-ink/50" },
 };
 
 export default function QueuePage() {
@@ -33,7 +33,7 @@ export default function QueuePage() {
     <div>
       <h1 className="font-display text-[26px] italic text-ink">File d'appels KHEDMATI</h1>
       <p className="mt-1 text-[14px] text-ink/60">
-        Dossiers en attente de validation â€” demandes client et offres artisan.
+        Dossiers en attente de validation — demandes client et offres artisan.
       </p>
 
       {isLoading && <p className="mt-8 text-ink/50">Chargement de la file...</p>}
@@ -62,7 +62,7 @@ export default function QueuePage() {
                     {c.targetType === "SERVICE_REQUEST" ? "Demande client" : "Offre artisan"}
                   </p>
                   <p className="max-w-md truncate text-[13px] text-ink/50">
-                    {target?.rawDescription ?? "â€”"}
+                    {target?.rawDescription ?? "—"}
                   </p>
                 </div>
               </div>

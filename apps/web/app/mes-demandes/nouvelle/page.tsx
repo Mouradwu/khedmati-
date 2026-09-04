@@ -9,11 +9,11 @@ const URGENCY_OPTIONS = [
   { value: "NORMAL", label: "Normal" },
   { value: "HIGH", label: "Urgent" },
   { value: "URGENT_NOW", label: "J'ai besoin de quelqu'un maintenant" },
-  { value: "LOW", label: "Pas pressÃ©" },
+  { value: "LOW", label: "Pas pressé" },
 ];
 
-// useSearchParams() exige une frontiÃ¨re Suspense en App Router â€” sans Ã§a,
-// Next.js Ã©choue au build ("should be wrapped in a suspense boundary").
+// useSearchParams() exige une frontière Suspense en App Router — sans ça,
+// Next.js échoue au build ("should be wrapped in a suspense boundary").
 export default function NewRequestPage() {
   return (
     <Suspense fallback={<p className="text-ink/50">Chargement...</p>}>
@@ -58,13 +58,13 @@ function NewRequestForm() {
     <div className="max-w-xl">
       <h1 className="font-display text-[26px] italic text-ink">De quoi avez-vous besoin ?</h1>
       <p className="mt-1 text-[14px] text-ink/60">
-        DÃ©crivez votre problÃ¨me avec vos mots â€” en franÃ§ais, en arabe ou en darija. Un opÃ©rateur
+        Décrivez votre problème avec vos mots — en français, en arabe ou en darija. Un opérateur
         KHEDMATI vous appellera pour confirmer avant toute mise en relation.
       </p>
 
       {professionName && (
         <p className="mt-3 inline-block rounded-full bg-emerald-soft px-3 py-1 text-[13px] font-medium text-emerald-dark">
-          MÃ©tier prÃ©sÃ©lectionnÃ© : {professionName}
+          Métier présélectionné : {professionName}
         </p>
       )}
 
@@ -76,7 +76,7 @@ function NewRequestForm() {
             rows={4}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Ex : Fuite d'eau sous l'Ã©vier de la cuisine, besoin d'un plombier rapidement..."
+            placeholder="Ex : Fuite d'eau sous l'évier de la cuisine, besoin d'un plombier rapidement..."
             className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink focus:border-emerald"
           />
         </div>

@@ -29,7 +29,7 @@ export default function ArtisanRequestsPage() {
       await api.respondToMatch(token, matchId, accepted);
       load();
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Impossible d'envoyer la rÃ©ponse.");
+      setError(e instanceof ApiError ? e.message : "Impossible d'envoyer la réponse.");
     } finally {
       setBusyId(null);
     }
@@ -37,9 +37,9 @@ export default function ArtisanRequestsPage() {
 
   return (
     <div>
-      <h1 className="font-display text-[26px] italic text-ink">Demandes reÃ§ues</h1>
+      <h1 className="font-display text-[26px] italic text-ink">Demandes reçues</h1>
       <p className="mt-1 text-[14px] text-ink/60">
-        Ces demandes vous sont proposÃ©es par KHEDMATI en fonction de votre mÃ©tier et de votre
+        Ces demandes vous sont proposées par KHEDMATI en fonction de votre métier et de votre
         zone d'intervention.
       </p>
 
@@ -49,11 +49,11 @@ export default function ArtisanRequestsPage() {
       {!isLoading && matches.length === 0 && (
         <div className="mt-8 rounded-xl border border-line bg-white/60 p-6">
           <p className="text-ink/70">
-            Aucune demande pour l'instant. VÃ©rifiez que{" "}
+            Aucune demande pour l'instant. Vérifiez que{" "}
             <a href="/artisan/profil" className="text-emerald-dark hover:underline">
               votre profil
             </a>{" "}
-            (mÃ©tiers, localisation) est bien complet â€” c'est ce qui permet Ã  KHEDMATI de vous
+            (métiers, localisation) est bien complet — c'est ce qui permet à KHEDMATI de vous
             proposer des demandes.
           </p>
         </div>
@@ -67,7 +67,7 @@ export default function ArtisanRequestsPage() {
                 <p className="text-[15px] text-ink">{m.request?.rawDescription}</p>
                 <p className="mt-1 text-[13px] text-ink/50">
                   Correspondance : {m.score}/100
-                  {m.distanceKm != null ? ` Â· ${m.distanceKm} km` : ""}
+                  {m.distanceKm != null ? ` · ${m.distanceKm} km` : ""}
                 </p>
               </div>
               <span className="shrink-0 rounded-full bg-gold-soft px-3 py-1 text-[12px] font-medium text-ink">
@@ -89,13 +89,13 @@ export default function ArtisanRequestsPage() {
                   disabled={busyId === m.id}
                   className="rounded-xl border border-line px-4 py-2 text-[14px] font-medium text-ink/70 hover:border-clay hover:text-clay-dark disabled:opacity-60"
                 >
-                  DÃ©cliner
+                  Décliner
                 </button>
               </div>
             )}
 
             {m.response?.message && (
-              <p className="mt-3 text-[13px] text-ink/50">Votre rÃ©ponse : {m.response.message}</p>
+              <p className="mt-3 text-[13px] text-ink/50">Votre réponse : {m.response.message}</p>
             )}
           </div>
         ))}

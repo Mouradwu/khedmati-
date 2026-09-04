@@ -37,7 +37,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <span className="font-display text-2xl italic text-ink">Khedmati</span>
-          <span className="font-arabic ml-2 text-lg text-emerald-dark">Ø®Ø¯Ù…ØªÙŠ</span>
+          <span className="font-arabic ml-2 text-lg text-emerald-dark">خدمتي</span>
         </div>
 
         <form
@@ -48,7 +48,7 @@ export default function LoginPage() {
 
           <div className="flex flex-col gap-1.5">
             <label htmlFor="phone" className="text-[13px] font-medium text-ink/70">
-              TÃ©lÃ©phone
+              Téléphone
             </label>
             <input
               id="phone"
@@ -90,9 +90,9 @@ export default function LoginPage() {
           <p className="text-center text-[13px] text-ink/50">
             Pas encore de compte ?{" "}
             <a href="/inscription" className="font-medium text-emerald-dark hover:underline">
-              CrÃ©er un compte client
+              Créer un compte client
             </a>{" "}
-            Â·{" "}
+            ·{" "}
             <a href="/inscription/artisan" className="font-medium text-emerald-dark hover:underline">
               Compte artisan
             </a>

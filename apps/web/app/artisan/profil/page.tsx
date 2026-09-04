@@ -56,14 +56,14 @@ export default function ArtisanProfilePage() {
     <div className="max-w-xl">
       <h1 className="font-display text-[26px] italic text-ink">Mon profil professionnel</h1>
       <p className="mt-1 text-[14px] text-ink/60">
-        Ces informations dÃ©terminent pour quelles demandes vous serez proposÃ© â€” remplissez-les
-        pour commencer Ã  recevoir des demandes.
+        Ces informations déterminent pour quelles demandes vous serez proposé — remplissez-les
+        pour commencer à recevoir des demandes.
       </p>
 
       <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-6 rounded-2xl border border-line bg-white/60 p-6">
         <div>
-          <h2 className="text-[15px] font-medium text-ink">Vos mÃ©tiers</h2>
-          <p className="mt-1 text-[13px] text-ink/50">SÃ©lectionnez un ou plusieurs corps de mÃ©tier.</p>
+          <h2 className="text-[15px] font-medium text-ink">Vos métiers</h2>
+          <p className="mt-1 text-[13px] text-ink/50">Sélectionnez un ou plusieurs corps de métier.</p>
           <div className="mt-3 flex flex-col gap-4">
             {categories.map((cat) => (
               <div key={cat.id}>
@@ -92,7 +92,7 @@ export default function ArtisanProfilePage() {
                 </div>
               </div>
             ))}
-            {categories.length === 0 && <p className="text-[13px] text-ink/40">Chargement des mÃ©tiers...</p>}
+            {categories.length === 0 && <p className="text-[13px] text-ink/40">Chargement des métiers...</p>}
           </div>
         </div>
 
@@ -121,7 +121,7 @@ export default function ArtisanProfilePage() {
         )}
         {saved && (
           <p className="rounded-lg bg-emerald-soft px-3 py-2 text-[13px] text-emerald-dark">
-            Profil enregistrÃ©.
+            Profil enregistré.
           </p>
         )}
 

@@ -22,11 +22,11 @@ export default function ArtisanAreaLayout({ children }: { children: React.ReactN
         <div className="mx-auto flex max-w-content items-center justify-between px-6 py-4">
           <a href="/" className="flex items-baseline gap-2">
             <span className="font-display text-lg italic text-ink">Khedmati</span>
-            <span className="text-[13px] text-ink/50">â€” Espace artisan</span>
+            <span className="text-[13px] text-ink/50">— Espace artisan</span>
           </a>
           <nav className="flex items-center gap-4 text-[14px]">
             <a href="/artisan/demandes" className="text-ink/70 hover:text-ink">
-              Demandes reÃ§ues
+              Demandes reçues
             </a>
             <a href="/artisan/offres" className="text-ink/70 hover:text-ink">
               Mes offres
@@ -45,7 +45,7 @@ export default function ArtisanAreaLayout({ children }: { children: React.ReactN
               }}
               className="rounded-full border border-line px-3 py-1.5 text-ink/70 hover:border-clay hover:text-clay-dark"
             >
-              DÃ©connexion
+              Déconnexion
             </button>
           </nav>
         </div>

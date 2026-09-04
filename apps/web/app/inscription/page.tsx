@@ -43,22 +43,22 @@ function ClientRegisterForm() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <span className="font-display text-2xl italic text-ink">Khedmati</span>
-          <span className="font-arabic ml-2 text-lg text-emerald-dark">Ø®Ø¯Ù…ØªÙŠ</span>
+          <span className="font-arabic ml-2 text-lg text-emerald-dark">خدمتي</span>
         </div>
 
         <form
           onSubmit={handleSubmit}
           className="flex flex-col gap-4 rounded-2xl border border-line bg-white/60 p-6"
         >
-          <h1 className="font-display text-[20px] italic text-ink">CrÃ©er un compte client</h1>
+          <h1 className="font-display text-[20px] italic text-ink">Créer un compte client</h1>
           <p className="text-[13px] text-ink/60">
-            Gratuit. Aucune vÃ©rification tÃ©lÃ©phonique bloquante â€” dÃ©crivez votre besoin dÃ¨s
-            l'inscription terminÃ©e.
+            Gratuit. Aucune vérification téléphonique bloquante — décrivez votre besoin dès
+            l'inscription terminée.
           </p>
 
           <div className="flex gap-3">
             <div className="flex flex-1 flex-col gap-1.5">
-              <label className="text-[13px] font-medium text-ink/70">PrÃ©nom</label>
+              <label className="text-[13px] font-medium text-ink/70">Prénom</label>
               <input
                 required
                 value={firstName}
@@ -78,7 +78,7 @@ function ClientRegisterForm() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[13px] font-medium text-ink/70">TÃ©lÃ©phone</label>
+            <label className="text-[13px] font-medium text-ink/70">Téléphone</label>
             <input
               type="tel"
               required
@@ -110,11 +110,11 @@ function ClientRegisterForm() {
             disabled={isSubmitting}
             className="mt-2 rounded-xl bg-emerald px-4 py-2.5 text-[15px] font-medium text-paper hover:bg-emerald-dark disabled:opacity-60"
           >
-            {isSubmitting ? "CrÃ©ation..." : "CrÃ©er mon compte"}
+            {isSubmitting ? "Création..." : "Créer mon compte"}
           </button>
 
           <p className="text-center text-[13px] text-ink/50">
-            DÃ©jÃ  un compte ?{" "}
+            Déjà un compte ?{" "}
             <a href="/login" className="font-medium text-emerald-dark hover:underline">
               Se connecter
             </a>

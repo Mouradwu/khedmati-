@@ -81,13 +81,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth doit Ãªtre utilisÃ© Ã  l'intÃ©rieur de <AuthProvider>.");
+  if (!ctx) throw new Error("useAuth doit être utilisé à l'intérieur de <AuthProvider>.");
   return ctx;
 }
 
 /**
- * ProtÃ¨ge une page/section : redirige vers /login si l'utilisateur n'est pas
- * connectÃ© avec l'un des rÃ´les autorisÃ©s. UtilisÃ© par les layouts
+ * Protège une page/section : redirige vers /login si l'utilisateur n'est pas
+ * connecté avec l'un des rôles autorisés. Utilisé par les layouts
  * /mes-demandes, /artisan et /admin.
  */
 export function useRequireRole(allowedRoles: string[]) {

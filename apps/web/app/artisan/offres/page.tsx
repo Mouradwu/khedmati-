@@ -37,11 +37,11 @@ export default function MyOffersPage() {
       {!isLoading && !error && offers.length === 0 && (
         <div className="mt-8 rounded-xl border border-line bg-white/60 p-6">
           <p className="text-ink/70">
-            Vous n'avez pas encore d'offre publiÃ©e.{" "}
+            Vous n'avez pas encore d'offre publiée.{" "}
             <a href="/artisan/offres/nouvelle" className="text-emerald-dark hover:underline">
-              DÃ©crivez votre activitÃ©
+              Décrivez votre activité
             </a>{" "}
-            pour commencer Ã  recevoir des demandes.
+            pour commencer à recevoir des demandes.
           </p>
         </div>
       )}
@@ -67,8 +67,8 @@ export default function MyOffersPage() {
 
       {offers.some((o) => ["SUBMITTED", "PENDING_CALL_VALIDATION", "CALL_IN_PROGRESS"].includes(o.status)) && (
         <p className="mt-6 rounded-lg bg-gold-soft px-4 py-3 text-[14px] text-ink">
-          ðŸ“ž Un opÃ©rateur KHEDMATI va vous appeler pour valider votre offre avant publication â€”
-          c'est ce qui protÃ¨ge les clients contre les faux profils.
+          📞 Un opérateur KHEDMATI va vous appeler pour valider votre offre avant publication —
+          c'est ce qui protège les clients contre les faux profils.
         </p>
       )}
     </div>

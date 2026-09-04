@@ -25,7 +25,7 @@ export class LocationsController {
   }
 
   // GET /locations/nearby-counts?lat=..&lng=..&radiusKm=10
-  // "Plombiers disponibles : 12" â€” un mÃ©tier par ligne, avec son compte.
+  // "Plombiers disponibles : 12" — un métier par ligne, avec son compte.
   @Get("nearby-counts")
   countByProfession(
     @Query("lat") lat: string,
@@ -39,7 +39,7 @@ export class LocationsController {
     });
   }
 
-  // CrÃ©e une localisation (wilaya/commune/coordonnÃ©es) Ã  rattacher ensuite Ã 
+  // Crée une localisation (wilaya/commune/coordonnées) à rattacher ensuite à
   // un profil client ou professionnel via PATCH /users/me/*-profile.
   @UseGuards(JwtAuthGuard)
   @Post()

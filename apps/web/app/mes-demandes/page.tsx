@@ -39,7 +39,7 @@ export default function MyRequestsPage() {
         <p className="mt-8 text-ink/50">
           Vous n'avez pas encore de demande.{" "}
           <a href="/mes-demandes/nouvelle" className="text-emerald-dark hover:underline">
-            CrÃ©ez-en une maintenant.
+            Créez-en une maintenant.
           </a>
         </p>
       )}

@@ -34,7 +34,7 @@ export default function ClientProfilePage() {
     <div className="max-w-xl">
       <h1 className="font-display text-[26px] italic text-ink">Ma localisation</h1>
       <p className="mt-1 text-[14px] text-ink/60">
-        Indiquez oÃ¹ vous Ãªtes pour que KHEDMATI vous propose des artisans rÃ©ellement proches de
+        Indiquez où vous êtes pour que KHEDMATI vous propose des artisans réellement proches de
         chez vous.
       </p>
 
@@ -46,7 +46,7 @@ export default function ClientProfilePage() {
         )}
         {saved && (
           <p className="rounded-lg bg-emerald-soft px-3 py-2 text-[13px] text-emerald-dark">
-            Localisation enregistrÃ©e.
+            Localisation enregistrée.
           </p>
         )}
 
@@ -63,7 +63,7 @@ export default function ClientProfilePage() {
             onClick={() => router.push("/artisans")}
             className="rounded-xl border border-line px-5 py-2.5 text-[15px] font-medium text-ink hover:border-emerald"
           >
-            Voir les artisans autour de moi â†’
+            Voir les artisans autour de moi →
           </button>
         </div>
       </form>

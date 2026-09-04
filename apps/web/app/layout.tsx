@@ -26,9 +26,9 @@ const kufi = Noto_Kufi_Arabic({
 });
 
 export const metadata: Metadata = {
-  title: "KHEDMATI â€” Ø®Ø¯Ù…ØªÙŠ",
+  title: "KHEDMATI — خدمتي",
   description:
-    "KHEDMATI met en relation clients et artisans/professionnels en AlgÃ©rie. Ø®Ø¯Ù…ØªÙƒ Ù‚Ø±ÙŠØ¨Ø© Ù„ÙŠÙƒ.",
+    "KHEDMATI met en relation clients et artisans/professionnels en Algérie. خدمتك قريبة ليك.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

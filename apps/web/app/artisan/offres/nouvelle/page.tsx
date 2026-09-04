@@ -29,10 +29,10 @@ export default function NewOfferPage() {
 
   return (
     <div className="max-w-xl">
-      <h1 className="font-display text-[26px] italic text-ink">DÃ©crivez votre activitÃ©</h1>
+      <h1 className="font-display text-[26px] italic text-ink">Décrivez votre activité</h1>
       <p className="mt-1 text-[14px] text-ink/60">
-        Ex : Â« Je suis plombier, disponible Ã  Alger, je rÃ©alise des dÃ©pannages et installations
-        sanitaires. Â» Un opÃ©rateur KHEDMATI vous appellera pour valider avant publication.
+        Ex : « Je suis plombier, disponible à Alger, je réalise des dépannages et installations
+        sanitaires. » Un opérateur KHEDMATI vous appellera pour valider avant publication.
       </p>
 
       <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4 rounded-2xl border border-line bg-white/60 p-6">
@@ -43,7 +43,7 @@ export default function NewOfferPage() {
             rows={5}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="DÃ©crivez votre mÃ©tier, vos spÃ©cialitÃ©s, votre zone d'intervention..."
+            placeholder="Décrivez votre métier, vos spécialités, votre zone d'intervention..."
             className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink focus:border-emerald"
           />
         </div>

@@ -8,10 +8,10 @@ export class LocationsService {
   constructor(private prisma: PrismaService) {}
 
   /**
-   * Distance Ã  vol d'oiseau entre deux points GPS (formule de Haversine).
-   * Suffisant pour le MVP ; Ã  grande Ã©chelle, remplacer par une requÃªte
-   * PostGIS (ST_DWithin) avec un index spatial GiST â€” voir commentaire sur
-   * le modÃ¨le Location dans le schÃ©ma Prisma.
+   * Distance à vol d'oiseau entre deux points GPS (formule de Haversine).
+   * Suffisant pour le MVP ; à grande échelle, remplacer par une requête
+   * PostGIS (ST_DWithin) avec un index spatial GiST — voir commentaire sur
+   * le modèle Location dans le schéma Prisma.
    */
   haversineDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const dLat = this.toRad(lat2 - lat1);
@@ -28,10 +28,10 @@ export class LocationsService {
   }
 
   /**
-   * "Autour de moi" avec comptage par mÃ©tier (section 10, nouvelle demande) :
+   * "Autour de moi" avec comptage par métier (section 10, nouvelle demande) :
    * pour chaque profession ayant au moins un artisan dans le rayon, renvoie
-   * le nombre d'artisans disponibles. Sert Ã  afficher
-   * "Plombiers disponibles : 12" avant mÃªme que le client choisisse un mÃ©tier.
+   * le nombre d'artisans disponibles. Sert à afficher
+   * "Plombiers disponibles : 12" avant même que le client choisisse un métier.
    */
   async countProfessionalsByProfession(params: {
     latitude: number;
@@ -85,13 +85,13 @@ export class LocationsService {
 
   /**
    * "Artisans autour de moi" (section 9-10) : renvoie les artisans dont le
-   * rayon d'intervention couvre le point donnÃ©, triÃ©s par distance, avec
+   * rayon d'intervention couvre le point donné, triés par distance, avec
    * filtre optionnel par profession.
    *
    * Approche MVP : on charge les profils ayant une localisation puis on
-   * filtre/trie en mÃ©moire. Pour une base de donnÃ©es de grande taille,
-   * remplacer par une requÃªte SQL gÃ©ospatiale (bounding box + Haversine ou
-   * PostGIS) exÃ©cutÃ©e directement en base.
+   * filtre/trie en mémoire. Pour une base de données de grande taille,
+   * remplacer par une requête SQL géospatiale (bounding box + Haversine ou
+   * PostGIS) exécutée directement en base.
    */
   async findProfessionalsNear(params: {
     latitude: number;

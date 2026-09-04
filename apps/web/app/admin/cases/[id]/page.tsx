@@ -6,13 +6,13 @@ import { useAuth, ApiError } from "@/lib/auth";
 import { api } from "@/lib/api";
 
 const OUTCOMES = [
-  { value: "VALIDATED", label: "ValidÃ©" },
-  { value: "VALIDATED_WITH_CHANGES", label: "ValidÃ© avec corrections" },
+  { value: "VALIDATED", label: "Validé" },
+  { value: "VALIDATED_WITH_CHANGES", label: "Validé avec corrections" },
   { value: "NEEDS_INFO", label: "Informations manquantes" },
-  { value: "CALLBACK_REQUESTED", label: "Rappel demandÃ©" },
-  { value: "NO_ANSWER", label: "Pas de rÃ©ponse" },
-  { value: "WRONG_NUMBER", label: "Mauvais numÃ©ro" },
-  { value: "REJECTED", label: "RejetÃ©" },
+  { value: "CALLBACK_REQUESTED", label: "Rappel demandé" },
+  { value: "NO_ANSWER", label: "Pas de réponse" },
+  { value: "WRONG_NUMBER", label: "Mauvais numéro" },
+  { value: "REJECTED", label: "Rejeté" },
   { value: "SUSPICIOUS", label: "Suspect" },
 ];
 
@@ -51,7 +51,7 @@ export default function CaseDetailPage() {
       const call = await api.startCall(token, caseId);
       setActiveCall(call);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Impossible de dÃ©marrer l'appel.");
+      setError(e instanceof ApiError ? e.message : "Impossible de démarrer l'appel.");
     } finally {
       setIsBusy(false);
     }
@@ -73,7 +73,7 @@ export default function CaseDetailPage() {
       setNote("");
       load();
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Impossible de rÃ©soudre l'appel.");
+      setError(e instanceof ApiError ? e.message : "Impossible de résoudre l'appel.");
     } finally {
       setIsBusy(false);
     }
@@ -85,9 +85,9 @@ export default function CaseDetailPage() {
     setError(null);
     try {
       await api.publish(token, caseData.serviceRequestId, caseData.offerId);
-      // Publication + lancement immÃ©diat de la recherche d'artisans
-      // correspondants â€” l'utilisateur n'a pas Ã  dÃ©clencher deux actions
-      // sÃ©parÃ©es pour un seul geste mÃ©tier.
+      // Publication + lancement immédiat de la recherche d'artisans
+      // correspondants — l'utilisateur n'a pas à déclencher deux actions
+      // séparées pour un seul geste métier.
       if (caseData.serviceRequestId) {
         await api.runMatching(token, caseData.serviceRequestId);
       }
@@ -111,7 +111,7 @@ export default function CaseDetailPage() {
   return (
     <div className="max-w-2xl">
       <button onClick={() => router.push("/admin/queue")} className="text-[13px] text-ink/50 hover:text-ink">
-        â† Retour Ã  la file
+        ← Retour à la file
       </button>
 
       <h1 className="mt-3 font-display text-[24px] italic text-ink">
@@ -130,11 +130,11 @@ export default function CaseDetailPage() {
 
       {caseData.attempts?.length > 0 && (
         <div className="mt-4">
-          <h2 className="text-[13px] font-medium text-ink/70">Tentatives prÃ©cÃ©dentes</h2>
+          <h2 className="text-[13px] font-medium text-ink/70">Tentatives précédentes</h2>
           <ul className="mt-2 flex flex-col gap-1">
             {caseData.attempts.map((a: any) => (
               <li key={a.id} className="text-[13px] text-ink/60">
-                #{a.attemptNumber} â€” {a.outcome} ({new Date(a.attemptedAt).toLocaleString("fr-FR")})
+                #{a.attemptNumber} — {a.outcome} ({new Date(a.attemptedAt).toLocaleString("fr-FR")})
               </li>
             ))}
           </ul>
@@ -143,7 +143,7 @@ export default function CaseDetailPage() {
 
       {caseData.notes?.length > 0 && (
         <div className="mt-4">
-          <h2 className="text-[13px] font-medium text-ink/70">Notes opÃ©rateur</h2>
+          <h2 className="text-[13px] font-medium text-ink/70">Notes opérateur</h2>
           <ul className="mt-2 flex flex-col gap-1">
             {caseData.notes.map((n: any) => (
               <li key={n.id} className="text-[13px] text-ink/60">
@@ -159,7 +159,7 @@ export default function CaseDetailPage() {
       <div className="mt-6">
         {isResolved ? (
           <p className="rounded-lg bg-emerald-soft px-4 py-3 text-[14px] text-emerald-dark">
-            Dossier rÃ©solu : <strong>{caseData.resolvedStatus}</strong>
+            Dossier résolu : <strong>{caseData.resolvedStatus}</strong>
           </p>
         ) : !activeCall ? (
           <button
@@ -167,14 +167,14 @@ export default function CaseDetailPage() {
             disabled={isBusy}
             className="rounded-xl bg-emerald px-5 py-2.5 text-[15px] font-medium text-paper hover:bg-emerald-dark disabled:opacity-60"
           >
-            {isBusy ? "DÃ©marrage..." : "ðŸ“ž DÃ©marrer l'appel"}
+            {isBusy ? "Démarrage..." : "📞 Démarrer l'appel"}
           </button>
         ) : (
           <form onSubmit={handleResolve} className="flex flex-col gap-3 rounded-xl border border-line bg-white/60 p-5">
             <p className="text-[13px] font-medium text-emerald-dark">Appel en cours...</p>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-[13px] font-medium text-ink/70">RÃ©sultat</label>
+              <label className="text-[13px] font-medium text-ink/70">Résultat</label>
               <select
                 value={outcome}
                 onChange={(e) => setOutcome(e.target.value)}
@@ -189,7 +189,7 @@ export default function CaseDetailPage() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-[13px] font-medium text-ink/70">RÃ©sumÃ© de l'appel</label>
+              <label className="text-[13px] font-medium text-ink/70">Résumé de l'appel</label>
               <textarea
                 value={summary}
                 onChange={(e) => setSummary(e.target.value)}
@@ -213,7 +213,7 @@ export default function CaseDetailPage() {
               disabled={isBusy}
               className="rounded-xl bg-ink px-5 py-2.5 text-[15px] font-medium text-paper hover:bg-ink/90 disabled:opacity-60"
             >
-              {isBusy ? "Envoi..." : "Valider le rÃ©sultat"}
+              {isBusy ? "Envoi..." : "Valider le résultat"}
             </button>
           </form>
         )}
@@ -224,7 +224,7 @@ export default function CaseDetailPage() {
             disabled={isBusy}
             className="mt-3 rounded-xl border border-emerald bg-emerald-soft px-5 py-2.5 text-[15px] font-medium text-emerald-dark hover:bg-emerald hover:text-paper disabled:opacity-60"
           >
-            {isBusy ? "Publication..." : "ðŸš€ Publier et rechercher des artisans"}
+            {isBusy ? "Publication..." : "🚀 Publier et rechercher des artisans"}
           </button>
         )}
       </div>

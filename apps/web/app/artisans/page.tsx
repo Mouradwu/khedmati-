@@ -42,7 +42,7 @@ export default function ArtisansPage() {
     );
   };
 
-  // Comptage par mÃ©tier â€” se recharge Ã  chaque changement de rayon/position.
+  // Comptage par métier — se recharge à chaque changement de rayon/position.
   useEffect(() => {
     setIsLoadingCounts(true);
     api
@@ -52,7 +52,7 @@ export default function ArtisansPage() {
       .finally(() => setIsLoadingCounts(false));
   }, [effectiveCoords.lat, effectiveCoords.lng, radiusKm]);
 
-  // Liste des artisans â€” seulement une fois un mÃ©tier choisi.
+  // Liste des artisans — seulement une fois un métier choisi.
   useEffect(() => {
     if (!selectedProfession) {
       setProfessionals([]);
@@ -68,7 +68,7 @@ export default function ArtisansPage() {
 
   const requestFrom = (professional: any) => {
     const desc = `Je cherche un(e) ${selectedProfession?.name.toLowerCase()}${
-      professional?.businessName ? ` â€” de prÃ©fÃ©rence ${professional.businessName}` : ""
+      professional?.businessName ? ` — de préférence ${professional.businessName}` : ""
     }`;
     const params = new URLSearchParams({
       desc,
@@ -89,7 +89,7 @@ export default function ArtisansPage() {
             <span className="font-display text-2xl italic text-ink">Khedmati</span>
           </a>
           <a href="/" className="text-[14px] text-ink/60 hover:text-ink">
-            â† Accueil
+            ← Accueil
           </a>
         </div>
       </header>
@@ -97,7 +97,7 @@ export default function ArtisansPage() {
       <div className="mx-auto max-w-content px-6 py-10">
         <h1 className="font-display text-[28px] italic text-ink">Artisans autour de moi</h1>
         <p className="mt-1 text-[14px] text-ink/60">
-          Choisissez votre zone, puis un mÃ©tier â€” Ã©largissez la recherche si peu de rÃ©sultats
+          Choisissez votre zone, puis un métier — élargissez la recherche si peu de résultats
           apparaissent.
         </p>
 
@@ -116,7 +116,7 @@ export default function ArtisansPage() {
             >
               {WILAYAS.map((w) => (
                 <option key={w.code} value={w.code}>
-                  {w.code} â€” {w.name}
+                  {w.code} — {w.name}
                 </option>
               ))}
             </select>
@@ -154,22 +154,22 @@ export default function ArtisansPage() {
             {gpsStatus === "locating"
               ? "Localisation..."
               : gpsStatus === "done"
-                ? "âœ“ Position GPS utilisÃ©e"
-                : "ðŸ“ Utiliser ma position GPS"}
+                ? "✓ Position GPS utilisée"
+                : "📍 Utiliser ma position GPS"}
           </button>
         </div>
 
-        {/* Comptage par mÃ©tier --------------------------------------------------- */}
+        {/* Comptage par métier --------------------------------------------------- */}
         <div className="mt-8">
           <h2 className="text-[15px] font-medium text-ink">
-            Disponibles dans un rayon de {radiusKm} km {coords ? "autour de vous" : `â€” ${wilaya.name}`}
+            Disponibles dans un rayon de {radiusKm} km {coords ? "autour de vous" : `— ${wilaya.name}`}
           </h2>
 
           {isLoadingCounts && <p className="mt-3 text-[13px] text-ink/50">Chargement...</p>}
 
           {!isLoadingCounts && counts.length === 0 && (
             <p className="mt-3 text-[13px] text-ink/50">
-              Aucun artisan trouvÃ© dans cette zone. Essayez d'Ã©largir le rayon de recherche.
+              Aucun artisan trouvé dans cette zone. Essayez d'élargir le rayon de recherche.
             </p>
           )}
 
@@ -184,13 +184,13 @@ export default function ArtisansPage() {
                     : "border-line bg-white text-ink hover:border-emerald"
                 }`}
               >
-                {profession.name} <span className="opacity-60">Â· {count}</span>
+                {profession.name} <span className="opacity-60">· {count}</span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Liste des artisans du mÃ©tier sÃ©lectionnÃ© ------------------------------ */}
+        {/* Liste des artisans du métier sélectionné ------------------------------ */}
         {selectedProfession && (
           <div className="mt-8">
             <h2 className="text-[15px] font-medium text-ink">{selectedProfession.name}s disponibles</h2>
@@ -212,11 +212,11 @@ export default function ArtisansPage() {
                   <div>
                     <p className="text-[15px] font-medium text-ink">
                       {pro.firstName} {pro.lastName}
-                      {pro.businessName ? ` â€” ${pro.businessName}` : ""}
+                      {pro.businessName ? ` — ${pro.businessName}` : ""}
                     </p>
                     <p className="mt-1 text-[13px] text-ink/50">
-                      {pro.distanceKm} km Â· {pro.location?.commune || pro.location?.wilaya}
-                      {pro.ratingCount > 0 ? ` Â· â˜… ${pro.ratingAverage.toFixed(1)}` : ""}
+                      {pro.distanceKm} km · {pro.location?.commune || pro.location?.wilaya}
+                      {pro.ratingCount > 0 ? ` · ★ ${pro.ratingAverage.toFixed(1)}` : ""}
                     </p>
                   </div>
                   <button

@@ -3,14 +3,14 @@ import { PrismaService } from "../prisma/prisma.service";
 import { LocationsService } from "../locations/locations.service";
 
 /**
- * Moteur de matching (section 26). Les poids par dÃ©faut reproduisent
- * exactement la rÃ©partition du cahier des charges :
+ * Moteur de matching (section 26). Les poids par défaut reproduisent
+ * exactement la répartition du cahier des charges :
  *
- *   MÃ©tier 30% Â· SpÃ©cialitÃ© 20% Â· Distance 20% Â· DisponibilitÃ© 10%
- *   ExpÃ©rience 5% Â· RÃ©putation 5% Â· Temps de rÃ©ponse 5% Â· Zone 5%
+ *   Métier 30% · Spécialité 20% · Distance 20% · Disponibilité 10%
+ *   Expérience 5% · Réputation 5% · Temps de réponse 5% · Zone 5%
  *
- * Ils sont stockÃ©s dans `MatchingConfig` (table administrable) et jamais
- * codÃ©s en dur dans le frontend ou figÃ©s dans ce service.
+ * Ils sont stockés dans `MatchingConfig` (table administrable) et jamais
+ * codés en dur dans le frontend ou figés dans ce service.
  */
 @Injectable()
 export class MatchingService {
@@ -29,7 +29,7 @@ export class MatchingService {
 
   /**
    * Calcule et persiste les candidats pour une demande PUBLISHED / MATCHING.
-   * AppelÃ© aprÃ¨s la validation par appel â€” jamais avant.
+   * Appelé après la validation par appel — jamais avant.
    */
   async runMatching(requestId: string) {
     const request = await this.prisma.serviceRequest.findUnique({
@@ -39,11 +39,11 @@ export class MatchingService {
     if (!request) throw new NotFoundException("Demande introuvable.");
     if (!["PUBLISHED", "MATCHING"].includes(request.status)) {
       throw new BadRequestException(
-        "Le matching ne peut Ãªtre lancÃ© que sur une demande validÃ©e et publiÃ©e.",
+        "Le matching ne peut être lancé que sur une demande validée et publiée.",
       );
     }
     if (!request.professionId) {
-      throw new BadRequestException("La demande doit Ãªtre rattachÃ©e Ã  un corps de mÃ©tier.");
+      throw new BadRequestException("La demande doit être rattachée à un corps de métier.");
     }
 
     const config = await this.getActiveConfig();
@@ -71,12 +71,12 @@ export class MatchingService {
             )
           : null;
 
-      const professionScore = 1; // dÃ©jÃ  filtrÃ© par profession exacte
+      const professionScore = 1; // déjà filtré par profession exacte
       const specialtyScore = request.specialtyId
         ? pro.specialties.some((s) => s.specialtyId === request.specialtyId)
           ? 1
           : 0.4
-        : 0.7; // pas de spÃ©cialitÃ© prÃ©cisÃ©e par le client -> score neutre
+        : 0.7; // pas de spécialité précisée par le client -> score neutre
 
       const distanceScore =
         distanceKm === null
@@ -107,14 +107,14 @@ export class MatchingService {
 
       return {
         professionalId: pro.id,
-        score: Math.round(weightedScore * 1000) / 10, // 0-100, 1 dÃ©cimale
+        score: Math.round(weightedScore * 1000) / 10, // 0-100, 1 décimale
         distanceKm: distanceKm !== null ? Math.round(distanceKm * 10) / 10 : null,
       };
     });
 
     // On ne propose que les artisans dont le rayon d'intervention couvre
-    // rÃ©ellement la demande, ou dont la localisation est inconnue (Ã 
-    // confirmer manuellement par l'opÃ©rateur).
+    // réellement la demande, ou dont la localisation est inconnue (à
+    // confirmer manuellement par l'opérateur).
     const eligible = scored
       .filter((s) => s.distanceKm === null || s.distanceKm <= 100)
       .sort((a, b) => b.score - a.score)
@@ -165,8 +165,8 @@ export class MatchingService {
   }
 
   /**
-   * Demandes proposÃ©es Ã  CE professionnel (son "inbox" de matching) â€”
-   * relie enfin le moteur de matching Ã  une interface consultable.
+   * Demandes proposées à CE professionnel (son "inbox" de matching) —
+   * relie enfin le moteur de matching à une interface consultable.
    */
   async getMatchesForProfessional(professionalUserId: string) {
     const profile = await this.prisma.professionalProfile.findUnique({

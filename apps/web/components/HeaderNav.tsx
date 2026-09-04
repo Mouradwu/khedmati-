@@ -8,7 +8,7 @@ export function HeaderNav() {
   return (
     <nav className="flex items-center gap-4 text-[14px] text-ink/70">
       <a href="#metiers" className="hover:text-ink">
-        MÃ©tiers
+        Métiers
       </a>
       <a href="/artisans" className="hover:text-ink">
         Artisans autour de moi
@@ -45,12 +45,12 @@ export function HeaderNav() {
 
       {user && (
         <button onClick={logout} className="hover:text-clay-dark">
-          DÃ©connexion
+          Déconnexion
         </button>
       )}
 
       <button className="rounded-full border border-line px-3 py-1.5 hover:border-emerald hover:text-emerald-dark">
-        FR Â· Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©
+        FR · العربية
       </button>
     </nav>
   );
