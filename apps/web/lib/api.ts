@@ -153,4 +153,14 @@ export const api = {
       token,
       body: JSON.stringify({ serviceRequestId, offerId }),
     }),
+
+  // --- Administration (section 30) ---
+  getAdminStats: (token: string) => request<any>("/admin/stats", { token }),
+  listAdminArtisans: (token: string) => request<any[]>("/admin/artisans", { token }),
+  listAdminClients: (token: string) => request<any[]>("/admin/clients", { token }),
+  listAdminRequests: (token: string) => request<any[]>("/admin/requests", { token }),
+  suspendUser: (token: string, userId: string) =>
+    request<any>(`/admin/users/${userId}/suspend`, { method: "POST", token }),
+  activateUser: (token: string, userId: string) =>
+    request<any>(`/admin/users/${userId}/activate`, { method: "POST", token }),
 };

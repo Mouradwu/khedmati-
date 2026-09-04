@@ -24,10 +24,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="mx-auto flex max-w-content items-center justify-between px-6 py-4">
           <div className="flex items-baseline gap-2">
             <span className="font-display text-lg italic text-ink">Khedmati</span>
-            <span className="text-[13px] text-ink/50">— Centre d'appels</span>
+            <span className="text-[13px] text-ink/50">— Administration</span>
           </div>
-          <div className="flex items-center gap-4 text-[14px]">
-            <span className="text-ink/60">{user.phone}</span>
+          <nav className="flex items-center gap-4 text-[14px]">
+            <a href="/admin/queue" className="text-ink/70 hover:text-ink">File d'appels</a>
+            <a href="/admin/artisans" className="text-ink/70 hover:text-ink">Artisans</a>
+            <a href="/admin/clients" className="text-ink/70 hover:text-ink">Demandeurs</a>
+            <a href="/admin/requests" className="text-ink/70 hover:text-ink">Demandes</a>
+            <span className="text-ink/40">{user.phone}</span>
             <button
               onClick={() => {
                 logout();
@@ -37,7 +41,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             >
               Déconnexion
             </button>
-          </div>
+          </nav>
         </div>
       </header>
       <div className="mx-auto max-w-content px-6 py-8">{children}</div>
