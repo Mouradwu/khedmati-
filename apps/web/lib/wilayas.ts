@@ -1,4 +1,6 @@
-// Les 58 wilayas d'Algérie, triées par code. Les coordonnées sont celles du
+// Les 69 wilayas d'Algérie (58 historiques + 11 créées par la loi n°26-06 du
+// 4 avril 2026, noms/numéros fixés par le décret présidentiel n°26-206 du
+// 25 mai 2026 — Journal officiel n°40). Les coordonnées sont celles du
 // chef-lieu de wilaya — une approximation suffisante pour un repli quand
 // l'utilisateur ne partage pas sa position GPS exacte. Pas de service de
 // géocodage payant intégré : la daïra/commune restent en texte libre
@@ -64,4 +66,17 @@ export const WILAYAS: Wilaya[] = [
   { code: "56", name: "Djanet", lat: 24.55, lng: 9.48 },
   { code: "57", name: "El M'Ghair", lat: 33.95, lng: 5.93 },
   { code: "58", name: "El Meniaa", lat: 30.58, lng: 2.88 },
+  // --- Wilayas créées en 2026 (loi n°26-06 / décret n°26-206) ---
+  { code: "59", name: "Aflou", lat: 34.11, lng: 2.1 },
+  { code: "60", name: "Barika", lat: 35.38, lng: 5.37 },
+  { code: "61", name: "El Kantara", lat: 35.22, lng: 5.7 },
+  { code: "62", name: "Bir El Ater", lat: 34.74, lng: 8.06 },
+  { code: "63", name: "El Aricha", lat: 34.3, lng: -1.27 },
+  { code: "64", name: "Ksar Chellala", lat: 35.2, lng: 2.31 },
+  { code: "65", name: "Aïn Ouessara", lat: 34.77, lng: 2.9 },
+  { code: "66", name: "Messaad", lat: 34.15, lng: 3.5 },
+  { code: "67", name: "Ksar El Boukhari", lat: 35.86, lng: 2.77 },
+  { code: "68", name: "Bou Saâda", lat: 35.21, lng: 4.19 },
+  { code: "69", name: "El Abiodh Sidi Cheikh", lat: 32.89, lng: 0.53 },
 ];
+
