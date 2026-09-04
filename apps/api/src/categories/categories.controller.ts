@@ -58,4 +58,13 @@ export class CategoriesController {
   deactivateProfession(@Param("id") id: string) {
     return this.categoriesService.deactivateProfession(id);
   }
+
+  // Filet de sécurité : peuple la taxonomie par défaut si elle est vide.
+  // Idempotent (upsert sur les slugs) — sans risque de doublon si rejoué.
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @Post("seed")
+  seedDefaultTaxonomy() {
+    return this.categoriesService.seedDefaultTaxonomy();
+  }
 }
