@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Manrope, Noto_Kufi_Arabic } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/lib/auth";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -25,16 +26,16 @@ const kufi = Noto_Kufi_Arabic({
 });
 
 export const metadata: Metadata = {
-  title: "KHEDMATI — خدمتي",
+  title: "KHEDMATI â€” Ø®Ø¯Ù…ØªÙŠ",
   description:
-    "KHEDMATI met en relation clients et artisans/professionnels en Algérie. خدمتك قريبة ليك.",
+    "KHEDMATI met en relation clients et artisans/professionnels en AlgÃ©rie. Ø®Ø¯Ù…ØªÙƒ Ù‚Ø±ÙŠØ¨Ø© Ù„ÙŠÙƒ.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
       <body className={`${fraunces.variable} ${manrope.variable} ${kufi.variable} font-sans`}>
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
