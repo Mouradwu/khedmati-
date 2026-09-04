@@ -20,8 +20,10 @@ export default function LoginPage() {
       const user = await login(phone, password);
       if (user.role === "ADMIN" || user.role === "SUPER_ADMIN" || user.role === "OPERATOR") {
         router.push("/admin/queue");
+      } else if (user.role === "PROFESSIONAL") {
+        router.push("/artisan/offres");
       } else {
-        router.push("/");
+        router.push("/mes-demandes");
       }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Connexion impossible.");
@@ -84,6 +86,17 @@ export default function LoginPage() {
           >
             {isSubmitting ? "Connexion..." : "Se connecter"}
           </button>
+
+          <p className="text-center text-[13px] text-ink/50">
+            Pas encore de compte ?{" "}
+            <a href="/inscription" className="font-medium text-emerald-dark hover:underline">
+              CrÃ©er un compte client
+            </a>{" "}
+            Â·{" "}
+            <a href="/inscription/artisan" className="font-medium text-emerald-dark hover:underline">
+              Compte artisan
+            </a>
+          </p>
         </form>
       </div>
     </main>

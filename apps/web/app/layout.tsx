@@ -34,6 +34,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
+      <head>
+        <meta charSet="utf-8" />
+      </head>
       <body className={`${fraunces.variable} ${manrope.variable} ${kufi.variable} font-sans`}>
         <AuthProvider>{children}</AuthProvider>
       </body>

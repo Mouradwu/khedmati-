@@ -1,6 +1,7 @@
 import { getCategoryTiles } from "@/lib/categories";
 import { SearchBar } from "@/components/SearchBar";
 import { ZelligeMotif } from "@/components/ZelligeMotif";
+import { HeaderNav } from "@/components/HeaderNav";
 
 export default async function HomePage() {
   const categories = await getCategoryTiles();
@@ -13,20 +14,7 @@ export default async function HomePage() {
             <span className="font-display text-2xl italic text-ink">Khedmati</span>
             <span className="font-arabic text-lg text-emerald-dark">Ø®Ø¯Ù…ØªÙŠ</span>
           </div>
-          <nav className="flex items-center gap-4 text-[14px] text-ink/70">
-            <a href="#metiers" className="hover:text-ink">
-              MÃ©tiers
-            </a>
-            <a href="#artisan" className="hover:text-ink">
-              Je suis artisan
-            </a>
-            <a href="/login" className="hover:text-ink">
-              Connexion
-            </a>
-            <button className="rounded-full border border-line px-3 py-1.5 hover:border-emerald hover:text-emerald-dark">
-              FR Â· Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©
-            </button>
-          </nav>
+          <HeaderNav />
         </div>
       </header>
 

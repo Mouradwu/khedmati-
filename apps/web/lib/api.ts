@@ -38,6 +38,42 @@ export const api = {
       { method: "POST", body: JSON.stringify({ phone, password }) },
     ),
 
+  register: (data: {
+    phone: string;
+    password: string;
+    role: "CLIENT" | "PROFESSIONAL";
+    firstName: string;
+    lastName: string;
+    businessName?: string;
+  }) =>
+    request<{ accessToken: string; user: { id: string; role: string; phone: string } }>(
+      "/auth/register",
+      { method: "POST", body: JSON.stringify(data) },
+    ),
+
+  getMe: (token: string) => request<any>("/users/me", { token }),
+
+  updateProfessionalProfile: (token: string, data: Record<string, unknown>) =>
+    request<any>("/users/me/professional-profile", {
+      method: "PATCH",
+      token,
+      body: JSON.stringify(data),
+    }),
+
+  // --- Demandes client (sections 5-7, 27-29) ---
+  createRequest: (token: string, data: { rawDescription: string; urgency?: string }) =>
+    request<any>("/requests", { method: "POST", token, body: JSON.stringify(data) }),
+
+  getMyRequests: (token: string) => request<any[]>("/requests/me", { token }),
+
+  getRequest: (token: string, id: string) => request<any>(`/requests/${id}`, { token }),
+
+  // --- Offres artisan (section 8, 30) ---
+  createOffer: (token: string, data: { rawDescription: string }) =>
+    request<any>("/offers", { method: "POST", token, body: JSON.stringify(data) }),
+
+  getMyOffers: (token: string) => request<any[]>("/offers/me", { token }),
+
   getQueue: (token: string, priority?: string) =>
     request<any[]>(`/validation/queue${priority ? `?priority=${priority}` : ""}`, { token }),
 

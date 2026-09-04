@@ -3,10 +3,8 @@
 import { useAuth, useRequireRole } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 
-const ALLOWED_ROLES = ["ADMIN", "SUPER_ADMIN", "OPERATOR"];
-
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { isAuthorized, isLoading } = useRequireRole(ALLOWED_ROLES);
+export default function ClientAreaLayout({ children }: { children: React.ReactNode }) {
+  const { isAuthorized, isLoading } = useRequireRole(["CLIENT"]);
   const { user, logout } = useAuth();
   const router = useRouter();
 
@@ -22,12 +20,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen bg-paper">
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-content items-center justify-between px-6 py-4">
-          <div className="flex items-baseline gap-2">
+          <a href="/" className="flex items-baseline gap-2">
             <span className="font-display text-lg italic text-ink">Khedmati</span>
-            <span className="text-[13px] text-ink/50">â€” Centre d'appels</span>
-          </div>
-          <div className="flex items-center gap-4 text-[14px]">
-            <span className="text-ink/60">{user.phone}</span>
+          </a>
+          <nav className="flex items-center gap-4 text-[14px]">
+            <a href="/mes-demandes" className="text-ink/70 hover:text-ink">
+              Mes demandes
+            </a>
+            <a href="/mes-demandes/nouvelle" className="text-ink/70 hover:text-ink">
+              Nouvelle demande
+            </a>
+            <span className="text-ink/40">{user.phone}</span>
             <button
               onClick={() => {
                 logout();
@@ -37,7 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             >
               DÃ©connexion
             </button>
-          </div>
+          </nav>
         </div>
       </header>
       <div className="mx-auto max-w-content px-6 py-8">{children}</div>
