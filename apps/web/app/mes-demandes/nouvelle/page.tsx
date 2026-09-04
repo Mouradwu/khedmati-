@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth, ApiError } from "@/lib/auth";
 import { api } from "@/lib/api";
+import { CategoryProfessionPicker } from "@/components/CategoryProfessionPicker";
 
 const URGENCY_OPTIONS = [
   { value: "NORMAL", label: "Normal" },
@@ -33,13 +34,24 @@ function NewRequestForm() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showRecap, setShowRecap] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [selectedProfession, setSelectedProfession] = useState<{ id: string; name: string } | null>(null);
+  const [showPicker, setShowPicker] = useState(false);
 
-  const professionId = searchParams.get("professionId") ?? undefined;
-  const professionName = searchParams.get("professionName");
+  useEffect(() => {
+    api.getCategoryTree().then(setCategories).catch(() => setCategories([]));
+  }, []);
 
   useEffect(() => {
     const desc = searchParams.get("desc");
     if (desc) setDescription(desc);
+    const pId = searchParams.get("professionId");
+    const pName = searchParams.get("professionName");
+    if (pId && pName) {
+      setSelectedProfession({ id: pId, name: pName });
+    } else {
+      setShowPicker(true);
+    }
   }, [searchParams]);
 
   const handleReview = (e: React.FormEvent) => {
@@ -61,7 +73,7 @@ function NewRequestForm() {
       const request = await api.createRequest(token, {
         rawDescription: description,
         urgency,
-        professionId,
+        professionId: selectedProfession?.id,
         ...(isoDate ? { desiredDate: isoDate } : {}),
       } as any);
       router.push(`/mes-demandes/${request.id}`);
@@ -78,10 +90,10 @@ function NewRequestForm() {
       <div className="max-w-xl">
         <h1 className="font-display text-[26px] italic text-ink">Récapitulatif</h1>
         <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-line bg-white/60 p-6">
-          {professionName && (
+          {selectedProfession && (
             <div>
               <p className="text-[12px] font-medium text-ink/50">Métier</p>
-              <p className="text-[15px] text-ink">{professionName}</p>
+              <p className="text-[15px] text-ink">{selectedProfession.name}</p>
             </div>
           )}
           <div>
@@ -134,13 +146,34 @@ function NewRequestForm() {
         KHEDMATI vous appellera pour confirmer avant toute mise en relation.
       </p>
 
-      {professionName && (
-        <p className="mt-3 inline-block rounded-full bg-emerald-soft px-3 py-1 text-[13px] font-medium text-emerald-dark">
-          Métier présélectionné : {professionName}
-        </p>
-      )}
-
       <form onSubmit={handleReview} className="mt-6 flex flex-col gap-4 rounded-2xl border border-line bg-white/60 p-6">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[13px] font-medium text-ink/70">
+            Métier concerné <span className="text-ink/40">(facultatif, aide à trouver le bon artisan)</span>
+          </label>
+          {selectedProfession && !showPicker ? (
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-emerald-soft px-3 py-1.5 text-[14px] font-medium text-emerald-dark">
+                {selectedProfession.name}
+              </span>
+              <button type="button" onClick={() => setShowPicker(true)} className="text-[13px] text-ink/50 hover:text-ink">
+                Changer
+              </button>
+            </div>
+          ) : categories.length === 0 ? (
+            <p className="text-[13px] text-ink/40">Chargement des métiers...</p>
+          ) : (
+            <CategoryProfessionPicker
+              categories={categories}
+              selectedIds={selectedProfession ? new Set([selectedProfession.id]) : undefined}
+              onSelect={(prof) => {
+                setSelectedProfession({ id: prof.id, name: prof.name });
+                setShowPicker(false);
+              }}
+            />
+          )}
+        </div>
+
         <div className="flex flex-col gap-1.5">
           <label className="text-[13px] font-medium text-ink/70">Votre besoin</label>
           <textarea

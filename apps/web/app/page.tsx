@@ -71,7 +71,7 @@ export default async function HomePage() {
               return (
                 <a
                   key={cat.slug}
-                  href={`#${cat.slug}`}
+                  href={`/artisans?categorySlug=${cat.slug}`}
                   className={`group flex flex-col gap-3 rounded-xl border ${border} ${tint} p-4 transition-transform hover:-translate-y-0.5`}
                 >
                   <span className="text-2xl">{cat.icon}</span>
@@ -85,7 +85,7 @@ export default async function HomePage() {
               );
             })}
             <a
-              href="#tous-les-metiers"
+              href="/artisans"
               className="flex flex-col items-start justify-center gap-1 rounded-xl border border-dashed border-line p-4 text-ink/60 hover:border-emerald hover:text-emerald-dark"
             >
               <span className="text-2xl">➕</span>

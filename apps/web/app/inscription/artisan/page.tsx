@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth, ApiError } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { LocationForm, LocationValue } from "@/components/LocationForm";
+import { CategoryProfessionPicker } from "@/components/CategoryProfessionPicker";
 
 const STEPS = ["Informations", "Activité", "Services", "Zone", "Disponibilité", "Réalisations", "Validation"];
 
@@ -175,22 +176,23 @@ function ArtisanRegisterWizard() {
                 </div>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-medium text-ink/70">Catégorie professionnelle</label>
-                <div className="flex flex-col gap-3">
-                  {categories.map((cat) => (
-                    <div key={cat.id}>
-                      <p className="text-[12px] font-medium text-ink/60">{cat.icon} {cat.name}</p>
-                      <div className="mt-1 flex flex-wrap gap-2">
-                        {cat.professions?.map((prof: any) => (
-                          <button key={prof.id} type="button" onClick={() => toggleSet(selectedProfessionIds, prof.id, setSelectedProfessionIds)}
-                            className={`rounded-full border px-3 py-1.5 text-[13px] transition-colors ${selectedProfessionIds.has(prof.id) ? "border-clay bg-clay-soft text-clay-dark" : "border-line bg-white text-ink/70 hover:border-clay"}`}>
-                            {prof.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <label className="text-[13px] font-medium text-ink/70">Catégorie et métier</label>
+                <p className="text-[12px] text-ink/50">Choisissez d'abord votre catégorie, puis le ou les métiers que vous exercez réellement.</p>
+                <CategoryProfessionPicker
+                  categories={categories}
+                  multiSelect
+                  selectedIds={selectedProfessionIds}
+                  onSelect={(prof) => toggleSet(selectedProfessionIds, prof.id, setSelectedProfessionIds)}
+                />
+                {selectedProfessionIds.size > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {selectedProfessions.map((p: any) => (
+                      <span key={p.id} className="rounded-full bg-clay-soft px-2.5 py-1 text-[12px] text-clay-dark">
+                        {p.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="mt-2 flex justify-between">
                 <button type="button" onClick={() => setStep(1)} className="text-[13px] text-ink/50 hover:text-ink">← Retour</button>

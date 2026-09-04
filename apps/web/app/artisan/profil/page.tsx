@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth, ApiError } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { LocationForm, LocationValue } from "@/components/LocationForm";
+import { CategoryProfessionPicker } from "@/components/CategoryProfessionPicker";
 
 export default function ArtisanProfilePage() {
   const { token } = useAuth();
@@ -104,37 +105,19 @@ export default function ArtisanProfilePage() {
 
         <div>
           <h2 className="text-[15px] font-medium text-ink">Vos métiers</h2>
-          <p className="mt-1 text-[13px] text-ink/50">Sélectionnez un ou plusieurs corps de métier.</p>
-          <div className="mt-3 flex flex-col gap-4">
-            {categories.map((cat) => (
-              <div key={cat.id}>
-                <p className="text-[13px] font-medium text-ink/70">
-                  {cat.icon} {cat.name}
-                </p>
-                <div className="mt-1.5 flex flex-wrap gap-2">
-                  {cat.professions?.map((prof: any) => (
-                    <label
-                      key={prof.id}
-                      className={`cursor-pointer rounded-full border px-3 py-1.5 text-[13px] transition-colors ${
-                        selectedProfessionIds.has(prof.id)
-                          ? "border-emerald bg-emerald-soft text-emerald-dark"
-                          : "border-line bg-white text-ink/70 hover:border-emerald"
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        className="hidden"
-                        checked={selectedProfessionIds.has(prof.id)}
-                        onChange={() => toggleProfession(prof.id)}
-                      />
-                      {prof.name}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            ))}
-            {categories.length === 0 && <p className="text-[13px] text-ink/40">Chargement des métiers...</p>}
-          </div>
+          <p className="mt-1 text-[13px] text-ink/50">Choisissez d'abord une catégorie, puis sélectionnez un ou plusieurs métiers.</p>
+          {categories.length === 0 ? (
+            <p className="mt-3 text-[13px] text-ink/40">Chargement des métiers...</p>
+          ) : (
+            <div className="mt-3">
+              <CategoryProfessionPicker
+                categories={categories}
+                multiSelect
+                selectedIds={selectedProfessionIds}
+                onSelect={(prof) => toggleProfession(prof.id)}
+              />
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col gap-1.5">

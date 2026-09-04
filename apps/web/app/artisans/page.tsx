@@ -1,32 +1,53 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { WILAYAS } from "@/lib/wilayas";
+import { CategoryProfessionPicker } from "@/components/CategoryProfessionPicker";
 
 const RADIUS_OPTIONS = [1, 5, 10, 20, 50];
 
+// useSearchParams() exige une frontière Suspense en App Router.
 export default function ArtisansPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-paper text-ink/50">Chargement...</div>}>
+      <ArtisansPageContent />
+    </Suspense>
+  );
+}
+
+function ArtisansPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
+  const categorySlugFromUrl = searchParams.get("categorySlug");
 
   const [wilayaCode, setWilayaCode] = useState("16");
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [gpsStatus, setGpsStatus] = useState<"idle" | "locating" | "done" | "error">("idle");
   const [radiusKm, setRadiusKm] = useState(10);
 
+  const [categories, setCategories] = useState<any[]>([]);
   const [counts, setCounts] = useState<Array<{ profession: any; count: number }>>([]);
   const [selectedProfession, setSelectedProfession] = useState<{ id: string; name: string } | null>(null);
   const [professionals, setProfessionals] = useState<any[]>([]);
-  const [isLoadingCounts, setIsLoadingCounts] = useState(true);
   const [isLoadingList, setIsLoadingList] = useState(false);
   const [minRating, setMinRating] = useState(0);
   const [minExperience, setMinExperience] = useState(0);
 
   const wilaya = WILAYAS.find((w) => w.code === wilayaCode) ?? WILAYAS[15];
   const effectiveCoords = useMemo(() => coords ?? { lat: wilaya.lat, lng: wilaya.lng }, [coords, wilaya]);
+
+  useEffect(() => {
+    api.getCategoryTree().then(setCategories).catch(() => setCategories([]));
+  }, []);
+
+  const initialCategoryId = useMemo(() => {
+    if (!categorySlugFromUrl || categories.length === 0) return undefined;
+    return categories.find((c: any) => c.slug === categorySlugFromUrl)?.id;
+  }, [categorySlugFromUrl, categories]);
 
   const useGps = () => {
     if (!navigator.geolocation) {
@@ -44,17 +65,21 @@ export default function ArtisansPage() {
     );
   };
 
-  // Comptage par métier — se recharge à chaque changement de rayon/position.
+  // Comptage par métier — sert uniquement à afficher un badge indicatif à
+  // côté de chaque métier dans le sélecteur ; ne bloque jamais l'affichage.
   useEffect(() => {
-    setIsLoadingCounts(true);
     api
       .getNearbyCounts(effectiveCoords.lat, effectiveCoords.lng, radiusKm)
       .then(setCounts)
-      .catch(() => setCounts([]))
-      .finally(() => setIsLoadingCounts(false));
+      .catch(() => setCounts([]));
   }, [effectiveCoords.lat, effectiveCoords.lng, radiusKm]);
 
-  // Liste des artisans — seulement une fois un métier choisi.
+  const countsMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    counts.forEach(({ profession, count }) => (map[profession.id] = count));
+    return map;
+  }, [counts]);
+
   useEffect(() => {
     if (!selectedProfession) {
       setProfessionals([]);
@@ -90,17 +115,14 @@ export default function ArtisansPage() {
           <a href="/" className="flex items-baseline gap-2">
             <span className="font-display text-2xl italic text-ink">Khedmati</span>
           </a>
-          <a href="/" className="text-[14px] text-ink/60 hover:text-ink">
-            ← Accueil
-          </a>
+          <a href="/" className="text-[14px] text-ink/60 hover:text-ink">← Accueil</a>
         </div>
       </header>
 
       <div className="mx-auto max-w-content px-6 py-10">
         <h1 className="font-display text-[28px] italic text-ink">Artisans autour de moi</h1>
         <p className="mt-1 text-[14px] text-ink/60">
-          Choisissez votre zone, puis un métier — élargissez la recherche si peu de résultats
-          apparaissent.
+          Choisissez d'abord un métier précis, puis votre zone — pour affiner davantage.
         </p>
 
         {/* Localisation + rayon ------------------------------------------------ */}
@@ -117,9 +139,7 @@ export default function ArtisansPage() {
               className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink"
             >
               {WILAYAS.map((w) => (
-                <option key={w.code} value={w.code}>
-                  {w.code} — {w.name}
-                </option>
+                <option key={w.code} value={w.code}>{w.code} — {w.name}</option>
               ))}
             </select>
           </div>
@@ -133,9 +153,7 @@ export default function ArtisansPage() {
                   type="button"
                   onClick={() => setRadiusKm(r)}
                   className={`rounded-full border px-3 py-1.5 text-[13px] font-medium transition-colors ${
-                    radiusKm === r
-                      ? "border-emerald bg-emerald-soft text-emerald-dark"
-                      : "border-line bg-white text-ink/70 hover:border-emerald"
+                    radiusKm === r ? "border-emerald bg-emerald-soft text-emerald-dark" : "border-line bg-white text-ink/70 hover:border-emerald"
                   }`}
                 >
                   {r} km
@@ -148,48 +166,29 @@ export default function ArtisansPage() {
             type="button"
             onClick={useGps}
             className={`rounded-xl border px-4 py-2.5 text-[13px] font-medium transition-colors ${
-              gpsStatus === "done"
-                ? "border-emerald bg-emerald-soft text-emerald-dark"
-                : "border-line bg-white text-ink/70 hover:border-emerald"
+              gpsStatus === "done" ? "border-emerald bg-emerald-soft text-emerald-dark" : "border-line bg-white text-ink/70 hover:border-emerald"
             }`}
           >
-            {gpsStatus === "locating"
-              ? "Localisation..."
-              : gpsStatus === "done"
-                ? "✓ Position GPS utilisée"
-                : "📍 Utiliser ma position GPS"}
+            {gpsStatus === "locating" ? "Localisation..." : gpsStatus === "done" ? "✓ Position GPS utilisée" : "📍 Utiliser ma position GPS"}
           </button>
         </div>
 
-        {/* Comptage par métier --------------------------------------------------- */}
+        {/* Sélection catégorie → métier ------------------------------------------ */}
         <div className="mt-8">
-          <h2 className="text-[15px] font-medium text-ink">
-            Disponibles dans un rayon de {radiusKm} km {coords ? "autour de vous" : `— ${wilaya.name}`}
-          </h2>
-
-          {isLoadingCounts && <p className="mt-3 text-[13px] text-ink/50">Chargement...</p>}
-
-          {!isLoadingCounts && counts.length === 0 && (
-            <p className="mt-3 text-[13px] text-ink/50">
-              Aucun artisan trouvé dans cette zone. Essayez d'élargir le rayon de recherche.
-            </p>
+          <h2 className="text-[15px] font-medium text-ink">Quel métier recherchez-vous ?</h2>
+          {categories.length === 0 ? (
+            <p className="mt-3 text-[13px] text-ink/50">Chargement des métiers...</p>
+          ) : (
+            <div className="mt-3">
+              <CategoryProfessionPicker
+                categories={categories}
+                initialCategoryId={initialCategoryId}
+                counts={countsMap}
+                selectedIds={selectedProfession ? new Set([selectedProfession.id]) : undefined}
+                onSelect={(prof) => setSelectedProfession({ id: prof.id, name: prof.name })}
+              />
+            </div>
           )}
-
-          <div className="mt-3 flex flex-wrap gap-2">
-            {counts.map(({ profession, count }) => (
-              <button
-                key={profession.id}
-                onClick={() => setSelectedProfession({ id: profession.id, name: profession.name })}
-                className={`rounded-full border px-4 py-2 text-[14px] font-medium transition-colors ${
-                  selectedProfession?.id === profession.id
-                    ? "border-emerald bg-emerald text-paper"
-                    : "border-line bg-white text-ink hover:border-emerald"
-                }`}
-              >
-                {profession.name} <span className="opacity-60">· {count}</span>
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Liste des artisans du métier sélectionné ------------------------------ */}
@@ -198,20 +197,12 @@ export default function ArtisansPage() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-[15px] font-medium text-ink">{selectedProfession.name}s disponibles</h2>
               <div className="flex gap-2">
-                <select
-                  value={minRating}
-                  onChange={(e) => setMinRating(Number(e.target.value))}
-                  className="rounded-full border border-line bg-white px-3 py-1.5 text-[13px] text-ink"
-                >
+                <select value={minRating} onChange={(e) => setMinRating(Number(e.target.value))} className="rounded-full border border-line bg-white px-3 py-1.5 text-[13px] text-ink">
                   <option value={0}>Toutes les notes</option>
                   <option value={4}>⭐ 4+</option>
                   <option value={4.5}>⭐ 4.5+</option>
                 </select>
-                <select
-                  value={minExperience}
-                  onChange={(e) => setMinExperience(Number(e.target.value))}
-                  className="rounded-full border border-line bg-white px-3 py-1.5 text-[13px] text-ink"
-                >
+                <select value={minExperience} onChange={(e) => setMinExperience(Number(e.target.value))} className="rounded-full border border-line bg-white px-3 py-1.5 text-[13px] text-ink">
                   <option value={0}>Toute expérience</option>
                   <option value={1}>1 an et +</option>
                   <option value={5}>5 ans et +</option>
@@ -230,16 +221,14 @@ export default function ArtisansPage() {
                 return (
                   <p className="mt-3 text-[13px] text-ink/50">
                     Aucun {selectedProfession.name.toLowerCase()} ne correspond à ces filtres dans ce rayon.
+                    Essayez d'élargir le rayon de recherche.
                   </p>
                 );
               }
               return (
                 <div className="mt-3 flex flex-col gap-3">
                   {filtered.map((pro) => (
-                    <div
-                      key={pro.id}
-                      className="flex items-center justify-between rounded-xl border border-line bg-white/60 p-4"
-                    >
+                    <div key={pro.id} className="flex items-center justify-between rounded-xl border border-line bg-white/60 p-4">
                       <a href={`/artisans/${pro.id}`} className="flex-1 hover:opacity-80">
                         <p className="text-[15px] font-medium text-ink">
                           {pro.firstName} {pro.lastName}
