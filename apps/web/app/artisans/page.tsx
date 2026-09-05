@@ -233,7 +233,7 @@ function ArtisansPageContent() {
               return (
                 <div className="mt-3 flex flex-col gap-3">
                   {filtered.map((pro) => (
-                    <div key={pro.id} className="flex items-center justify-between rounded-xl border border-line bg-surface/60 p-4">
+                    <div key={pro.id} className="flex items-center justify-between rounded-xl border border-line bg-surface/60 p-4 transition-shadow hover:border-emerald/40 hover:shadow-sm">
                       <a href={`/artisans/${pro.id}`} className="flex-1 hover:opacity-80">
                         <p className="text-[15px] font-medium text-ink">
                           {pro.firstName} {pro.lastName}

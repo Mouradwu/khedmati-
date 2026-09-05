@@ -2,19 +2,133 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   DESIGN TOKENS KHEDMATI — charte graphique officielle
+   Triplets "R G B" (sans virgules) pour permettre le modificateur
+   d'opacité Tailwind : bg-primary/50, text-ink/70, etc.
+   ============================================================ */
+:root {
+  --color-bg: 244 247 248;           /* #F4F7F8 */
+  --color-bg-dim: 230 242 255;       /* #E6F2FF — sections secondaires */
+  --color-surface: 255 255 255;      /* #FFFFFF */
+  --color-surface-elevated: 255 255 255;
+
+  --color-ink: 0 45 77;              /* #002D4D */
+  --color-ink-secondary: 95 113 128; /* #5F7180 */
+
+  --color-border: 227 234 238;       /* #E3EAEE */
+
+  --color-primary: 15 166 122;       /* #0FA67A */
+  --color-primary-dark: 11 138 101;  /* variante foncée pour hover */
+  --color-primary-soft: 223 244 237; /* fond teinté vert clair */
+
+  --color-secondary: 35 182 160;     /* #23B6A0 */
+  --color-secondary-dark: 24 145 128;
+  --color-secondary-soft: 222 244 241;
+
+  --color-danger: 230 57 70;         /* #E63946 */
+  --color-danger-dark: 195 42 53;
+  --color-danger-soft: 251 226 228;
+
+  --color-warning: 255 184 0;        /* #FFB800 */
+  --color-warning-soft: 255 243 214;
+
+  --color-info-bg: 230 242 255;      /* #E6F2FF */
+
+  /* Constante — texte clair sur bouton de couleur, jamais inversée par le
+     mode sombre (le fond du bouton reste vert/marine dans les deux cas). */
+  --color-on-brand: 255 255 255;
+}
+
+.dark {
+  --color-bg: 0 32 51;               /* #002033 */
+  --color-bg-dim: 0 45 77;           /* #002D4D */
+  --color-surface: 7 54 83;          /* #073653 */
+  --color-surface-elevated: 10 65 97;/* #0A4161 */
+
+  --color-ink: 255 255 255;
+  --color-ink-secondary: 184 201 212;/* #B8C9D4 */
+
+  --color-border: 40 83 107;         /* #28536B */
+
+  --color-primary: 15 166 122;       /* identique — déjà lisible sur fond sombre */
+  --color-primary-dark: 20 191 141;  /* plus clair pour rester visible au hover */
+  --color-primary-soft: 12 51 42;    /* teinte foncée, pas un pastel clair */
+
+  --color-secondary: 35 182 160;
+  --color-secondary-dark: 51 201 179;
+  --color-secondary-soft: 12 51 48;
+
+  --color-danger: 235 90 101;        /* légèrement éclairci pour contraste sur fond sombre */
+  --color-danger-dark: 230 57 70;
+  --color-danger-soft: 62 27 31;
+
+  --color-warning: 255 195 40;
+  --color-warning-soft: 61 47 15;
+
+  --color-info-bg: 10 51 71;
+}
+
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  background-color: #efeadc;
-  color: #16221d;
+  background-color: rgb(var(--color-bg));
+  color: rgb(var(--color-ink));
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 /* Focus visible cohérent sur tous les éléments interactifs (accessibilité) */
 :focus-visible {
-  outline: 2px solid #0e6b4f;
+  outline: 2px solid rgb(var(--color-primary));
   outline-offset: 2px;
+}
+
+/* ============================================================
+   HIÉRARCHIE VISUELLE DES BOUTONS — section 9 : les éléments
+   cliquables doivent être immédiatement reconnaissables. Ciblé sur
+   les classes de fond déjà utilisées exclusivement pour des actions
+   (boutons/liens principaux) partout dans l'application, donc
+   s'applique automatiquement sans retoucher chaque fichier.
+   ============================================================ */
+.bg-emerald,
+.bg-ink,
+.bg-secondary {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+  transition: box-shadow 0.15s ease, transform 0.08s ease;
+}
+.bg-emerald:hover,
+.bg-ink:hover,
+.bg-secondary:hover {
+  box-shadow: 0 3px 8px rgb(0 0 0 / 0.14);
+}
+.bg-emerald:active,
+.bg-ink:active,
+.bg-secondary:active {
+  transform: scale(0.98);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.1);
+}
+.dark .bg-emerald,
+.dark .bg-ink,
+.dark .bg-secondary {
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
+}
+.dark .bg-emerald:hover,
+.dark .bg-ink:hover,
+.dark .bg-secondary:hover {
+  box-shadow: 0 3px 10px rgb(0 0 0 / 0.4);
+}
+
+/* Cartes cliquables : légère élévation au survol pour signaler
+   l'interactivité, cohérente en clair comme en sombre. */
+a.hover\:-translate-y-0\.5:hover,
+a[href]:hover > .rounded-xl,
+a[href]:hover > .rounded-2xl {
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.06);
+}
+.dark a.hover\:-translate-y-0\.5:hover {
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.35);
 }
 
 @media (prefers-reduced-motion: reduce) {
