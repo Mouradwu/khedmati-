@@ -1,4 +1,5 @@
-import { ForbiddenException, Injectable } from "@nestjs/common";
+import { ConflictException, ForbiddenException, Injectable } from "@nestjs/common";
+import { Prisma } from "@khedmati/database";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateReviewDto } from "./dto/create-review.dto";
 import { CreateClientReviewDto } from "./dto/create-client-review.dto";
@@ -8,9 +9,17 @@ export class ReviewsService {
   constructor(private prisma: PrismaService) {}
 
   async create(authorId: string, dto: CreateReviewDto) {
-    const review = await this.prisma.review.create({
-      data: { authorId, ...dto },
-    });
+    let review;
+    try {
+      review = await this.prisma.review.create({
+        data: { authorId, ...dto },
+      });
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+        throw new ConflictException("Vous avez déjà laissé un avis pour cet artisan.");
+      }
+      throw err;
+    }
 
     await this.recomputeAggregate(dto.professionalId);
     return review;
@@ -65,9 +74,17 @@ export class ReviewsService {
       }
     }
 
-    const review = await this.prisma.clientReview.create({
-      data: { authorId: authorUserId, ...dto },
-    });
+    let review;
+    try {
+      review = await this.prisma.clientReview.create({
+        data: { authorId: authorUserId, ...dto },
+      });
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+        throw new ConflictException("Vous avez déjà évalué ce client pour cette prestation.");
+      }
+      throw err;
+    }
     await this.recomputeClientAggregate(dto.clientId);
     return review;
   }
