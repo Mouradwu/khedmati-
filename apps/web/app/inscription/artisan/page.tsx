@@ -137,7 +137,7 @@ function ArtisanRegisterWizard() {
           {step === 1 && (
             <form onSubmit={handleAccountSubmit} className="flex flex-col gap-4">
               <h2 className="text-[15px] font-medium text-ink">Vos informations</h2>
-              <div className="flex gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row">
                 <div className="flex flex-1 flex-col gap-1.5">
                   <label className="text-[13px] font-medium text-ink/70">Prénom</label>
                   <input required value={firstName} onChange={(e) => setFirstName(e.target.value)} className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink focus:border-secondary" />

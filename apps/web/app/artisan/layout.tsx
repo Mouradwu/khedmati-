@@ -2,13 +2,16 @@
 
 import { useAuth, useRequireRole } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/lib/language";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AppHeaderNav } from "@/components/AppHeaderNav";
 
 export default function ArtisanAreaLayout({ children }: { children: React.ReactNode }) {
   const { isAuthorized, isLoading } = useRequireRole(["PROFESSIONAL"]);
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
 
   if (isLoading || !isAuthorized || !user) {
@@ -19,40 +22,35 @@ export default function ArtisanAreaLayout({ children }: { children: React.ReactN
     );
   }
 
+  const links = [
+    { href: "/artisan/demandes", label: t("nav.receivedRequests") },
+    { href: "/artisan/offres", label: t("nav.myOffers") },
+    { href: "/artisan/offres/nouvelle", label: t("nav.newOffer") },
+    { href: "/artisan/profil", label: t("nav.myProfile") },
+  ];
+
   return (
     <div className="min-h-screen bg-paper">
-      <header className="border-b border-line">
+      <header className="relative border-b border-line">
         <div className="mx-auto flex max-w-content items-center justify-between px-6 py-4">
           <a href="/" className="flex items-baseline gap-2">
             <Logo variant="horizontal" className="h-7" />
-            <span className="text-[13px] text-ink/50">— Espace artisan</span>
+            <span className="hidden text-[13px] text-ink/50 sm:inline">— Espace artisan</span>
           </a>
-          <nav className="flex items-center gap-4 text-[14px]">
-            <a href="/artisan/demandes" className="text-ink/70 hover:text-ink">
-              Demandes reçues
-            </a>
-            <a href="/artisan/offres" className="text-ink/70 hover:text-ink">
-              Mes offres
-            </a>
-            <a href="/artisan/offres/nouvelle" className="text-ink/70 hover:text-ink">
-              Nouvelle offre
-            </a>
-            <a href="/artisan/profil" className="text-ink/70 hover:text-ink">
-              Mon profil
-            </a>
-            <NotificationBell />
-            <ThemeToggle />
-            <span className="text-ink/40">{user.phone}</span>
-            <button
-              onClick={() => {
-                logout();
-                router.push("/login");
-              }}
-              className="rounded-full border border-line px-3 py-1.5 text-ink/70 hover:border-secondary hover:text-secondary-dark"
-            >
-              Déconnexion
-            </button>
-          </nav>
+          <AppHeaderNav
+            links={links}
+            extra={
+              <>
+                <NotificationBell />
+                <ThemeToggle />
+                <span className="text-ink/40">{user.phone}</span>
+              </>
+            }
+            onLogout={() => {
+              logout();
+              router.push("/login");
+            }}
+          />
         </div>
       </header>
       <div className="mx-auto max-w-content px-6 py-8">{children}</div>

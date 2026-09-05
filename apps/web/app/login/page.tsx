@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth, ApiError } from "@/lib/auth";
+import { useLanguage } from "@/lib/language";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
+  const { t, lang, toggleLang } = useLanguage();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +38,13 @@ export default function LoginPage() {
 
   return (
     <main className="relative flex min-h-screen items-center justify-center bg-paper px-6">
-      <div className="absolute right-6 top-6">
+      <div className="absolute right-6 top-6 flex items-center gap-2">
+        <button
+          onClick={toggleLang}
+          className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] text-ink/70 hover:border-emerald"
+        >
+          {lang === "fr" ? "FR · AR" : "AR · FR"}
+        </button>
         <ThemeToggle />
       </div>
       <div className="w-full max-w-sm">
@@ -48,11 +56,11 @@ export default function LoginPage() {
           onSubmit={handleSubmit}
           className="flex flex-col gap-4 rounded-2xl border border-line bg-surface/60 p-6"
         >
-          <h1 className="font-display text-[20px] italic text-ink">Connexion</h1>
+          <h1 className="font-display text-[20px] italic text-ink">{t("auth.login")}</h1>
 
           <div className="flex flex-col gap-1.5">
             <label htmlFor="phone" className="text-[13px] font-medium text-ink/70">
-              Téléphone
+              {t("auth.phone")}
             </label>
             <input
               id="phone"
@@ -67,7 +75,7 @@ export default function LoginPage() {
 
           <div className="flex flex-col gap-1.5">
             <label htmlFor="password" className="text-[13px] font-medium text-ink/70">
-              Mot de passe
+              {t("auth.password")}
             </label>
             <input
               id="password"
@@ -88,17 +96,17 @@ export default function LoginPage() {
             disabled={isSubmitting}
             className="mt-2 rounded-xl bg-emerald px-4 py-2.5 text-[15px] font-medium text-onbrand transition-colors hover:bg-emerald-dark disabled:opacity-60"
           >
-            {isSubmitting ? "Connexion..." : "Se connecter"}
+            {isSubmitting ? t("auth.loggingIn") : t("auth.loginButton")}
           </button>
 
           <p className="text-center text-[13px] text-ink/50">
-            Pas encore de compte ?{" "}
+            {t("auth.noAccount")}{" "}
             <a href="/inscription/client" className="font-medium text-emerald-dark hover:underline">
-              Créer un compte client
+              {t("auth.createClientAccount")}
             </a>{" "}
             ·{" "}
             <a href="/inscription/artisan" className="font-medium text-emerald-dark hover:underline">
-              Compte artisan
+              {t("auth.artisanAccount")}
             </a>
           </p>
         </form>

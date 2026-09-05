@@ -81,7 +81,7 @@ export function LocationForm({
         </select>
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row">
         <div className="flex flex-1 flex-col gap-1.5">
           <label className="text-[13px] font-medium text-ink/70">
             Daïra <span className="text-ink/40">(facultatif)</span>

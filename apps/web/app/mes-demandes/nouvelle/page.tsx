@@ -201,7 +201,7 @@ function NewRequestForm() {
           </select>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <div className="flex flex-1 flex-col gap-1.5">
             <label className="text-[13px] font-medium text-ink/70">Date souhaitée <span className="text-ink/40">(facultatif)</span></label>
             <input type="date" value={desiredDate} onChange={(e) => setDesiredDate(e.target.value)} className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink focus:border-emerald" />

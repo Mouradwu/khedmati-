@@ -1,21 +1,18 @@
 import { getCategoryTiles } from "@/lib/categories";
-import { SearchBar } from "@/components/SearchBar";
 import { HeaderNav } from "@/components/HeaderNav";
 import { Logo } from "@/components/Logo";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { HeroText } from "@/components/HeroText";
+import { T } from "@/components/T";
 
 export default async function HomePage() {
   const categories = await getCategoryTiles();
 
   return (
     <main className="min-h-screen bg-paper">
-      <header className="border-b border-line">
+      <header className="relative border-b border-line">
         <div className="mx-auto flex max-w-content items-center justify-between px-6 py-5">
           <Logo className="h-8 sm:h-9" />
-          <div className="flex items-center gap-3">
-            <HeaderNav />
-            <ThemeToggle />
-          </div>
+          <HeaderNav />
         </div>
       </header>
 
@@ -24,23 +21,7 @@ export default async function HomePage() {
       {/* ---------------------------------------------------------------- */}
       <section className="mx-auto max-w-content px-6 pb-16 pt-14 sm:pt-20">
         <div className="grid gap-10 sm:grid-cols-[1.3fr_0.7fr] sm:items-center">
-          <div>
-            <h1 className="font-display text-[42px] italic leading-[1.08] text-ink sm:text-[56px]">
-              De quoi
-              <br />
-              avez-vous besoin ?
-            </h1>
-            <p className="mt-4 max-w-md text-[16px] leading-relaxed text-ink/70">
-              Expliquez votre problème avec vos mots — en français, en arabe ou en darija.
-              KHEDMATI trouve le bon artisan près de chez vous.
-            </p>
-
-            <div className="mt-8">
-              <SearchBar />
-            </div>
-
-            <p className="font-arabic mt-6 text-[15px] text-ink/50">خدمتك قريبة ليك</p>
-          </div>
+          <HeroText />
 
           <div className="hidden items-center justify-center rounded-2xl border border-line bg-surface p-8 sm:flex">
             <Logo variant="principal" className="w-full max-w-[280px]" />
@@ -53,15 +34,15 @@ export default async function HomePage() {
       {/* ---------------------------------------------------------------- */}
       <section id="metiers" className="border-t border-line bg-paperDim/60">
         <div className="mx-auto max-w-content px-6 py-14">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <h2 className="font-display text-[26px] italic text-ink">
-              Trouver un professionnel autour de moi
+              <T k="home.findNearMe" />
             </h2>
             <a
               href="/artisans"
               className="w-fit rounded-full bg-emerald px-4 py-2 text-[14px] font-medium text-onbrand hover:bg-emerald-dark"
             >
-              📍 Utiliser ma position
+              📍 <T k="home.useLocation" />
             </a>
           </div>
 
@@ -90,7 +71,7 @@ export default async function HomePage() {
               className="flex flex-col items-start justify-center gap-1 rounded-xl border border-dashed border-line p-4 text-ink/60 hover:border-emerald hover:text-emerald-dark"
             >
               <span className="text-2xl">➕</span>
-              <span className="text-[15px] font-medium">Voir tous les métiers</span>
+              <span className="text-[15px] font-medium"><T k="home.viewAllTrades" /></span>
             </a>
           </div>
         </div>
@@ -102,25 +83,24 @@ export default async function HomePage() {
       <section id="artisan" className="mx-auto max-w-content px-6 py-16">
         <div className="flex flex-col items-start gap-4 rounded-2xl border border-line bg-surface/50 p-8 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="font-display text-[24px] italic text-ink">Vous êtes artisan ?</h2>
+            <h2 className="font-display text-[24px] italic text-ink"><T k="home.artisanSectionTitle" /></h2>
             <p className="mt-2 max-w-lg text-[15px] text-ink/70">
-              Créez votre profil gratuitement, précisez votre métier et votre zone
-              d&apos;intervention, et recevez des demandes vérifiées près de chez vous.
+              <T k="home.artisanSectionBody" />
             </p>
           </div>
           <a
             href="/inscription/artisan"
             className="shrink-0 rounded-xl bg-ink px-5 py-3 text-[15px] font-medium text-onbrand hover:bg-ink/90"
           >
-            Créer mon profil artisan
+            <T k="home.createArtisanProfile" />
           </a>
         </div>
       </section>
 
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-content flex-col gap-2 px-6 py-8 text-[13px] text-ink/50 sm:flex-row sm:items-center sm:justify-between">
-          <p>KHEDMATI met en relation ; ce n&apos;est pas un service d&apos;urgence officiel.</p>
-          <p className="font-arabic">© {new Date().getFullYear()} خدمتي — Algérie</p>
+          <p><T k="home.footerDisclaimer" /></p>
+          <p className="font-arabic">© {new Date().getFullYear()} خدمتي — الجزائر</p>
         </div>
       </footer>
     </main>
