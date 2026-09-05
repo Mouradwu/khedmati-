@@ -328,13 +328,11 @@ model ClientProfile {
   @@map("client_profiles")
 }
 
-/**
- * Notation bidirectionnelle "type Airbnb" (section 10) : l'artisan note le
- * client, symetrique du modele Review (client note artisan) deja existant.
- * Modele separe plutot que d'etendre Review — evite de rendre nullable un
- * champ obligatoire existant (professionalId), donc zero risque sur les
- * avis deja en base.
- */
+// Notation bidirectionnelle "type Airbnb" (section 10) : l'artisan note le
+// client, symetrique du modele Review (client note artisan) deja existant.
+// Modele separe plutot que d'etendre Review - evite de rendre nullable un
+// champ obligatoire existant (professionalId), donc zero risque sur les
+// avis deja en base.
 model ClientReview {
   id              String          @id @default(cuid())
   requestId       String?
