@@ -1,5 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, ConflictException, ForbiddenException, Injectable } from "@nestjs/common";
+import * as bcrypt from "bcrypt";
 import { PrismaService } from "../prisma/prisma.service";
+
+const SALT_ROUNDS = 12;
 
 /** Statistiques du dashboard admin (section 38). */
 @Injectable()
@@ -134,7 +137,77 @@ export class AdminService {
   }
 
   /** Suspendre / réactiver un compte (section 30, 41). */
-  async setUserStatus(userId: string, status: "ACTIVE" | "SUSPENDED") {
-    return this.prisma.user.update({ where: { id: userId }, data: { status } });
+  async setUserStatus(userId: string, status: "ACTIVE" | "SUSPENDED", adminId: string, reason?: string) {
+    const user = await this.prisma.user.update({ where: { id: userId }, data: { status } });
+    await this.logAdminAction(
+      adminId,
+      status === "SUSPENDED" ? "SUSPEND_USER" : "ACTIVATE_USER",
+      "User",
+      userId,
+      reason,
+    );
+    return user;
+  }
+
+  /**
+   * Deux niveaux d'administrateur (sections 28-31, 36) :
+   *  - OPERATOR  = "Admin Validation" : traite la file d'appels uniquement.
+   *  - ADMIN / SUPER_ADMIN = "Admin Complet" : gère utilisateurs, catégories,
+   *    services, et les autres comptes admin.
+   *
+   * Ces comptes ne peuvent JAMAIS être créés via /auth/register (public) —
+   * uniquement ici, par un admin déjà authentifié. Un ADMIN simple ne peut
+   * créer qu'un OPERATOR ; seul un SUPER_ADMIN peut créer un autre ADMIN ou
+   * SUPER_ADMIN (un compte ne peut jamais s'auto-élever, section 36).
+   */
+  async createAdminUser(
+    creatorRole: string,
+    data: { phone: string; password: string; firstName: string; lastName: string; role: "OPERATOR" | "ADMIN" | "SUPER_ADMIN" },
+  ) {
+    if (data.role !== "OPERATOR" && creatorRole !== "SUPER_ADMIN") {
+      throw new ForbiddenException(
+        "Seul un Admin Complet (SUPER_ADMIN) peut créer un compte ADMIN ou SUPER_ADMIN.",
+      );
+    }
+
+    const existing = await this.prisma.user.findUnique({ where: { phone: data.phone } });
+    if (existing) {
+      throw new ConflictException("Un compte existe déjà avec ce numéro de téléphone.");
+    }
+
+    const passwordHash = await bcrypt.hash(data.password, SALT_ROUNDS);
+    const user = await this.prisma.user.create({
+      data: {
+        phone: data.phone,
+        passwordHash,
+        role: data.role,
+      },
+    });
+
+    return { id: user.id, phone: user.phone, role: user.role, firstName: data.firstName, lastName: data.lastName };
+  }
+
+  async listAdminUsers() {
+    const users = await this.prisma.user.findMany({
+      where: { role: { in: ["OPERATOR", "ADMIN", "SUPER_ADMIN"] } },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, phone: true, role: true, status: true, createdAt: true },
+    });
+    return users;
+  }
+
+  /** Journal d'actions admin (section 38). */
+  async logAdminAction(adminId: string, action: string, targetType: string, targetId: string, reason?: string) {
+    return this.prisma.adminAction.create({
+      data: { adminId, action, targetType, targetId, reason },
+    });
+  }
+
+  async listAuditLog() {
+    return this.prisma.adminAction.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 100,
+      include: { admin: { select: { phone: true, role: true } } },
+    });
   }
 }

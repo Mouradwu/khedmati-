@@ -20,19 +20,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
+  const isFullAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
+
   return (
     <div className="min-h-screen bg-paper">
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-content items-center justify-between px-6 py-4">
           <div className="flex items-center gap-2">
             <Logo variant="horizontal" className="h-7" />
-            <span className="text-[13px] text-ink/50">— Administration</span>
+            <span className="text-[13px] text-ink/50">— {isFullAdmin ? "Admin Complet" : "Admin Validation"}</span>
           </div>
-          <nav className="flex items-center gap-4 text-[14px]">
+          <nav className="flex flex-wrap items-center gap-4 text-[14px]">
             <a href="/admin/queue" className="text-ink/70 hover:text-ink">File d'appels</a>
-            <a href="/admin/artisans" className="text-ink/70 hover:text-ink">Artisans</a>
-            <a href="/admin/clients" className="text-ink/70 hover:text-ink">Demandeurs</a>
-            <a href="/admin/requests" className="text-ink/70 hover:text-ink">Demandes</a>
+            {isFullAdmin && (
+              <>
+                <a href="/admin/artisans" className="text-ink/70 hover:text-ink">Artisans</a>
+                <a href="/admin/clients" className="text-ink/70 hover:text-ink">Demandeurs</a>
+                <a href="/admin/requests" className="text-ink/70 hover:text-ink">Demandes</a>
+                <a href="/admin/categories" className="text-ink/70 hover:text-ink">Catégories</a>
+                <a href="/admin/admins" className="text-ink/70 hover:text-ink">Administrateurs</a>
+                <a href="/admin/audit-log" className="text-ink/70 hover:text-ink">Journal</a>
+              </>
+            )}
             <span className="text-ink/40">{user.phone}</span>
             <ThemeToggle />
             <button

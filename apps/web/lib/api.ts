@@ -164,6 +164,25 @@ export const api = {
   activateUser: (token: string, userId: string) =>
     request<any>(`/admin/users/${userId}/activate`, { method: "POST", token }),
 
+  listAdmins: (token: string) => request<any[]>("/admin/admins", { token }),
+  createAdminUser: (
+    token: string,
+    data: { phone: string; password: string; firstName: string; lastName: string; role: string },
+  ) => request<any>("/admin/admins", { method: "POST", token, body: JSON.stringify(data) }),
+  getAuditLog: (token: string) => request<any[]>("/admin/audit-log", { token }),
+
+  // --- Gestion de la taxonomie (sections 12, 32-35) ---
+  createCategory: (token: string, data: { name: string; nameAr?: string; icon?: string }) =>
+    request<any>("/categories", { method: "POST", token, body: JSON.stringify(data) }),
+  createProfession: (token: string, data: { categoryId: string; name: string; nameAr?: string; synonyms?: string[] }) =>
+    request<any>("/categories/professions", { method: "POST", token, body: JSON.stringify(data) }),
+  createSpecialty: (token: string, data: { professionId: string; name: string; nameAr?: string }) =>
+    request<any>("/categories/specialties", { method: "POST", token, body: JSON.stringify(data) }),
+  deactivateCategory: (token: string, id: string) =>
+    request<any>(`/categories/${id}`, { method: "DELETE", token }),
+  deactivateProfession: (token: string, id: string) =>
+    request<any>(`/categories/professions/${id}`, { method: "DELETE", token }),
+
   // --- Notifications (section 17) ---
   getNotifications: (token: string) => request<any[]>("/notifications/me", { token }),
   getUnreadNotificationCount: (token: string) => request<number>("/notifications/me/unread-count", { token }),
