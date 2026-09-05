@@ -3,6 +3,8 @@
 import { useAuth, useRequireRole } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { NotificationBell } from "@/components/NotificationBell";
+import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function ArtisanAreaLayout({ children }: { children: React.ReactNode }) {
   const { isAuthorized, isLoading } = useRequireRole(["PROFESSIONAL"]);
@@ -22,7 +24,7 @@ export default function ArtisanAreaLayout({ children }: { children: React.ReactN
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-content items-center justify-between px-6 py-4">
           <a href="/" className="flex items-baseline gap-2">
-            <span className="font-display text-lg italic text-ink">Khedmati</span>
+            <Logo variant="horizontal" className="h-7" />
             <span className="text-[13px] text-ink/50">— Espace artisan</span>
           </a>
           <nav className="flex items-center gap-4 text-[14px]">
@@ -39,13 +41,14 @@ export default function ArtisanAreaLayout({ children }: { children: React.ReactN
               Mon profil
             </a>
             <NotificationBell />
+            <ThemeToggle />
             <span className="text-ink/40">{user.phone}</span>
             <button
               onClick={() => {
                 logout();
                 router.push("/login");
               }}
-              className="rounded-full border border-line px-3 py-1.5 text-ink/70 hover:border-clay hover:text-clay-dark"
+              className="rounded-full border border-line px-3 py-1.5 text-ink/70 hover:border-secondary hover:text-secondary-dark"
             >
               Déconnexion
             </button>

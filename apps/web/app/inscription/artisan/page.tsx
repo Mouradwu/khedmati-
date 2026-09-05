@@ -6,6 +6,8 @@ import { useAuth, ApiError } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { LocationForm, LocationValue } from "@/components/LocationForm";
 import { CategoryProfessionPicker } from "@/components/CategoryProfessionPicker";
+import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const STEPS = ["Informations", "Activité", "Services", "Zone", "Disponibilité", "Réalisations", "Validation"];
 
@@ -110,17 +112,20 @@ function ArtisanRegisterWizard() {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-paper px-6 py-12">
+    <main className="relative flex min-h-screen items-center justify-center bg-paper px-6 py-12">
+      <div className="absolute right-6 top-6">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-lg">
-        <div className="mb-6 text-center">
-          <span className="font-display text-2xl italic text-ink">Khedmati</span>
+        <div className="mb-6 flex flex-col items-center gap-2 text-center">
+          <Logo variant="icon" className="h-14" />
           <h1 className="mt-2 font-display text-[22px] italic text-ink">Complétez votre profil professionnel</h1>
         </div>
 
         <div className="mb-6 flex items-center gap-1">
           {STEPS.map((label, i) => (
             <div key={label} className="flex flex-1 flex-col items-center gap-1">
-              <div className={`h-1.5 w-full rounded-full ${step >= i + 1 ? "bg-clay" : "bg-line"}`} />
+              <div className={`h-1.5 w-full rounded-full ${step >= i + 1 ? "bg-secondary" : "bg-line"}`} />
               <span className={`hidden text-[10px] sm:block ${step === i + 1 ? "font-medium text-ink" : "text-ink/40"}`}>
                 {i + 1}. {label}
               </span>
@@ -128,30 +133,30 @@ function ArtisanRegisterWizard() {
           ))}
         </div>
 
-        <div className="rounded-2xl border border-line bg-white/60 p-6">
+        <div className="rounded-2xl border border-line bg-surface/60 p-6">
           {step === 1 && (
             <form onSubmit={handleAccountSubmit} className="flex flex-col gap-4">
               <h2 className="text-[15px] font-medium text-ink">Vos informations</h2>
               <div className="flex gap-3">
                 <div className="flex flex-1 flex-col gap-1.5">
                   <label className="text-[13px] font-medium text-ink/70">Prénom</label>
-                  <input required value={firstName} onChange={(e) => setFirstName(e.target.value)} className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink focus:border-clay" />
+                  <input required value={firstName} onChange={(e) => setFirstName(e.target.value)} className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink focus:border-secondary" />
                 </div>
                 <div className="flex flex-1 flex-col gap-1.5">
                   <label className="text-[13px] font-medium text-ink/70">Nom</label>
-                  <input required value={lastName} onChange={(e) => setLastName(e.target.value)} className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink focus:border-clay" />
+                  <input required value={lastName} onChange={(e) => setLastName(e.target.value)} className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink focus:border-secondary" />
                 </div>
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[13px] font-medium text-ink/70">Téléphone</label>
-                <input type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+213..." className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink focus:border-clay" />
+                <input type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+213..." className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink focus:border-secondary" />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[13px] font-medium text-ink/70">Mot de passe</label>
-                <input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink focus:border-clay" />
+                <input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink focus:border-secondary" />
               </div>
-              {error && <p className="rounded-lg bg-clay-soft px-3 py-2 text-[13px] text-clay-dark">{error}</p>}
-              <button type="submit" disabled={isSubmitting} className="mt-2 rounded-xl bg-clay px-4 py-2.5 text-[15px] font-medium text-paper hover:bg-clay-dark disabled:opacity-60">
+              {error && <p className="rounded-lg bg-danger-soft px-3 py-2 text-[13px] text-danger-dark">{error}</p>}
+              <button type="submit" disabled={isSubmitting} className="mt-2 rounded-xl bg-secondary px-4 py-2.5 text-[15px] font-medium text-onbrand hover:bg-secondary-dark disabled:opacity-60">
                 {isSubmitting ? "Création..." : "Continuer"}
               </button>
             </form>
@@ -162,14 +167,14 @@ function ArtisanRegisterWizard() {
               <h2 className="text-[15px] font-medium text-ink">Votre activité</h2>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[13px] font-medium text-ink/70">Nom commercial <span className="text-ink/40">(facultatif)</span></label>
-                <input value={businessName} onChange={(e) => setBusinessName(e.target.value)} className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink focus:border-clay" />
+                <input value={businessName} onChange={(e) => setBusinessName(e.target.value)} className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink focus:border-secondary" />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[13px] font-medium text-ink/70">Type d'activité</label>
                 <div className="flex flex-wrap gap-2">
                   {ACTIVITY_TYPES.map((t) => (
                     <button key={t.value} type="button" onClick={() => setActivityType(t.value)}
-                      className={`rounded-full border px-3 py-1.5 text-[13px] transition-colors ${activityType === t.value ? "border-clay bg-clay-soft text-clay-dark" : "border-line bg-white text-ink/70 hover:border-clay"}`}>
+                      className={`rounded-full border px-3 py-1.5 text-[13px] transition-colors ${activityType === t.value ? "border-secondary bg-secondary-soft text-secondary-dark" : "border-line bg-surface text-ink/70 hover:border-secondary"}`}>
                       {t.label}
                     </button>
                   ))}
@@ -187,7 +192,7 @@ function ArtisanRegisterWizard() {
                 {selectedProfessionIds.size > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {selectedProfessions.map((p: any) => (
-                      <span key={p.id} className="rounded-full bg-clay-soft px-2.5 py-1 text-[12px] text-clay-dark">
+                      <span key={p.id} className="rounded-full bg-secondary-soft px-2.5 py-1 text-[12px] text-secondary-dark">
                         {p.name}
                       </span>
                     ))}
@@ -196,7 +201,7 @@ function ArtisanRegisterWizard() {
               </div>
               <div className="mt-2 flex justify-between">
                 <button type="button" onClick={() => setStep(1)} className="text-[13px] text-ink/50 hover:text-ink">← Retour</button>
-                <button type="button" disabled={selectedProfessionIds.size === 0} onClick={() => setStep(3)} className="rounded-xl bg-clay px-4 py-2.5 text-[15px] font-medium text-paper hover:bg-clay-dark disabled:opacity-40">Continuer</button>
+                <button type="button" disabled={selectedProfessionIds.size === 0} onClick={() => setStep(3)} className="rounded-xl bg-secondary px-4 py-2.5 text-[15px] font-medium text-onbrand hover:bg-secondary-dark disabled:opacity-40">Continuer</button>
               </div>
             </div>
           )}
@@ -210,7 +215,7 @@ function ArtisanRegisterWizard() {
               )}
               <div className="flex flex-wrap gap-2">
                 {availableSpecialties.map((s: any) => (
-                  <label key={s.id} className={`cursor-pointer rounded-full border px-3 py-1.5 text-[13px] transition-colors ${selectedSpecialtyIds.has(s.id) ? "border-clay bg-clay-soft text-clay-dark" : "border-line bg-white text-ink/70 hover:border-clay"}`}>
+                  <label key={s.id} className={`cursor-pointer rounded-full border px-3 py-1.5 text-[13px] transition-colors ${selectedSpecialtyIds.has(s.id) ? "border-secondary bg-secondary-soft text-secondary-dark" : "border-line bg-surface text-ink/70 hover:border-secondary"}`}>
                     <input type="checkbox" className="hidden" checked={selectedSpecialtyIds.has(s.id)} onChange={() => toggleSet(selectedSpecialtyIds, s.id, setSelectedSpecialtyIds)} />
                     {s.name}
                   </label>
@@ -218,7 +223,7 @@ function ArtisanRegisterWizard() {
               </div>
               <div className="mt-2 flex justify-between">
                 <button type="button" onClick={() => setStep(2)} className="text-[13px] text-ink/50 hover:text-ink">← Retour</button>
-                <button type="button" onClick={() => setStep(4)} className="rounded-xl bg-clay px-4 py-2.5 text-[15px] font-medium text-paper hover:bg-clay-dark">Continuer</button>
+                <button type="button" onClick={() => setStep(4)} className="rounded-xl bg-secondary px-4 py-2.5 text-[15px] font-medium text-onbrand hover:bg-secondary-dark">Continuer</button>
               </div>
             </div>
           )}
@@ -233,7 +238,7 @@ function ArtisanRegisterWizard() {
               </div>
               <div className="mt-2 flex justify-between">
                 <button type="button" onClick={() => setStep(3)} className="text-[13px] text-ink/50 hover:text-ink">← Retour</button>
-                <button type="button" onClick={() => setStep(5)} className="rounded-xl bg-clay px-4 py-2.5 text-[15px] font-medium text-paper hover:bg-clay-dark">Continuer</button>
+                <button type="button" onClick={() => setStep(5)} className="rounded-xl bg-secondary px-4 py-2.5 text-[15px] font-medium text-onbrand hover:bg-secondary-dark">Continuer</button>
               </div>
             </div>
           )}
@@ -243,17 +248,17 @@ function ArtisanRegisterWizard() {
               <h2 className="text-[15px] font-medium text-ink">Votre disponibilité</h2>
               <div className="flex gap-2">
                 <button type="button" onClick={() => setIsAcceptingRequests(true)}
-                  className={`rounded-full border px-4 py-2 text-[14px] font-medium transition-colors ${isAcceptingRequests ? "border-emerald bg-emerald-soft text-emerald-dark" : "border-line bg-white text-ink/60 hover:border-emerald"}`}>
+                  className={`rounded-full border px-4 py-2 text-[14px] font-medium transition-colors ${isAcceptingRequests ? "border-emerald bg-emerald-soft text-emerald-dark" : "border-line bg-surface text-ink/60 hover:border-emerald"}`}>
                   🟢 Disponible pour de nouvelles demandes
                 </button>
                 <button type="button" onClick={() => setIsAcceptingRequests(false)}
-                  className={`rounded-full border px-4 py-2 text-[14px] font-medium transition-colors ${!isAcceptingRequests ? "border-clay bg-clay-soft text-clay-dark" : "border-line bg-white text-ink/60 hover:border-clay"}`}>
+                  className={`rounded-full border px-4 py-2 text-[14px] font-medium transition-colors ${!isAcceptingRequests ? "border-secondary bg-secondary-soft text-secondary-dark" : "border-line bg-surface text-ink/60 hover:border-secondary"}`}>
                   🔴 Indisponible pour l'instant
                 </button>
               </div>
               <div className="mt-2 flex justify-between">
                 <button type="button" onClick={() => setStep(4)} className="text-[13px] text-ink/50 hover:text-ink">← Retour</button>
-                <button type="button" onClick={() => setStep(6)} className="rounded-xl bg-clay px-4 py-2.5 text-[15px] font-medium text-paper hover:bg-clay-dark">Continuer</button>
+                <button type="button" onClick={() => setStep(6)} className="rounded-xl bg-secondary px-4 py-2.5 text-[15px] font-medium text-onbrand hover:bg-secondary-dark">Continuer</button>
               </div>
             </div>
           )}
@@ -267,15 +272,15 @@ function ArtisanRegisterWizard() {
               </p>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[13px] font-medium text-ink/70">Années d'expérience <span className="text-ink/40">(facultatif)</span></label>
-                <input type="number" min={0} value={yearsExperience} onChange={(e) => setYearsExperience(e.target.value)} className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink focus:border-clay" />
+                <input type="number" min={0} value={yearsExperience} onChange={(e) => setYearsExperience(e.target.value)} className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink focus:border-secondary" />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[13px] font-medium text-ink/70">Présentation <span className="text-ink/40">(facultatif)</span></label>
-                <textarea rows={3} value={bio} onChange={(e) => setBio(e.target.value)} className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink focus:border-clay" />
+                <textarea rows={3} value={bio} onChange={(e) => setBio(e.target.value)} className="rounded-xl border border-line bg-surface px-4 py-3 text-[15px] text-ink focus:border-secondary" />
               </div>
               <div className="mt-2 flex justify-between">
                 <button type="button" onClick={() => setStep(5)} className="text-[13px] text-ink/50 hover:text-ink">← Retour</button>
-                <button type="button" onClick={() => setStep(7)} className="rounded-xl bg-clay px-4 py-2.5 text-[15px] font-medium text-paper hover:bg-clay-dark">Continuer</button>
+                <button type="button" onClick={() => setStep(7)} className="rounded-xl bg-secondary px-4 py-2.5 text-[15px] font-medium text-onbrand hover:bg-secondary-dark">Continuer</button>
               </div>
             </div>
           )}
@@ -294,10 +299,10 @@ function ArtisanRegisterWizard() {
                 profil avant qu'il ne soit visible des clients — c'est ce qui protège tout le
                 monde des faux profils.
               </p>
-              {error && <p className="rounded-lg bg-clay-soft px-3 py-2 text-[13px] text-clay-dark">{error}</p>}
+              {error && <p className="rounded-lg bg-danger-soft px-3 py-2 text-[13px] text-danger-dark">{error}</p>}
               <div className="mt-2 flex justify-between">
                 <button type="button" onClick={() => setStep(6)} className="text-[13px] text-ink/50 hover:text-ink">← Retour</button>
-                <button type="button" onClick={handleFinalSubmit} disabled={isSubmitting} className="rounded-xl bg-emerald px-5 py-2.5 text-[15px] font-medium text-paper hover:bg-emerald-dark disabled:opacity-60">
+                <button type="button" onClick={handleFinalSubmit} disabled={isSubmitting} className="rounded-xl bg-emerald px-5 py-2.5 text-[15px] font-medium text-onbrand hover:bg-emerald-dark disabled:opacity-60">
                   {isSubmitting ? "Enregistrement..." : "Terminer mon inscription"}
                 </button>
               </div>

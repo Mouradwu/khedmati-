@@ -74,7 +74,7 @@ export default function ArtisanProfilePage() {
         pour commencer à recevoir des demandes.
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-6 rounded-2xl border border-line bg-white/60 p-6">
+      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-6 rounded-2xl border border-line bg-surface/60 p-6">
         <div>
           <h2 className="text-[15px] font-medium text-ink">Statut de disponibilité</h2>
           <div className="mt-2 flex gap-2">
@@ -84,7 +84,7 @@ export default function ArtisanProfilePage() {
               className={`rounded-full border px-4 py-2 text-[14px] font-medium transition-colors ${
                 isAcceptingRequests
                   ? "border-emerald bg-emerald-soft text-emerald-dark"
-                  : "border-line bg-white text-ink/60 hover:border-emerald"
+                  : "border-line bg-surface text-ink/60 hover:border-emerald"
               }`}
             >
               🟢 Disponible pour de nouvelles demandes
@@ -94,8 +94,8 @@ export default function ArtisanProfilePage() {
               onClick={() => setIsAcceptingRequests(false)}
               className={`rounded-full border px-4 py-2 text-[14px] font-medium transition-colors ${
                 !isAcceptingRequests
-                  ? "border-clay bg-clay-soft text-clay-dark"
-                  : "border-line bg-white text-ink/60 hover:border-clay"
+                  ? "border-secondary bg-secondary-soft text-secondary-dark"
+                  : "border-line bg-surface text-ink/60 hover:border-secondary"
               }`}
             >
               🔴 Indisponible actuellement
@@ -141,7 +141,7 @@ export default function ArtisanProfilePage() {
         </div>
 
         {error && (
-          <p className="rounded-lg bg-clay-soft px-3 py-2 text-[13px] text-clay-dark">{error}</p>
+          <p className="rounded-lg bg-danger-soft px-3 py-2 text-[13px] text-danger-dark">{error}</p>
         )}
         {saved && (
           <p className="rounded-lg bg-emerald-soft px-3 py-2 text-[13px] text-emerald-dark">
@@ -152,7 +152,7 @@ export default function ArtisanProfilePage() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="rounded-xl bg-clay px-5 py-2.5 text-[15px] font-medium text-paper hover:bg-clay-dark disabled:opacity-60"
+          className="rounded-xl bg-secondary px-5 py-2.5 text-[15px] font-medium text-onbrand hover:bg-secondary-dark disabled:opacity-60"
         >
           {isSubmitting ? "Enregistrement..." : "Enregistrer mon profil"}
         </button>

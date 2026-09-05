@@ -20,7 +20,7 @@ export default function AdminRequestsPage() {
       <h1 className="font-display text-[26px] italic text-ink">Demandes</h1>
       {isLoading && <p className="mt-6 text-ink/50">Chargement...</p>}
       {!isLoading && (
-        <div className="mt-6 overflow-x-auto rounded-xl border border-line bg-white/60">
+        <div className="mt-6 overflow-x-auto rounded-xl border border-line bg-surface/60">
           <table className="w-full text-left text-[13px]">
             <thead className="border-b border-line text-ink/50">
               <tr>

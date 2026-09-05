@@ -1,7 +1,8 @@
 import { getCategoryTiles } from "@/lib/categories";
 import { SearchBar } from "@/components/SearchBar";
-import { ZelligeMotif } from "@/components/ZelligeMotif";
 import { HeaderNav } from "@/components/HeaderNav";
+import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default async function HomePage() {
   const categories = await getCategoryTiles();
@@ -10,11 +11,11 @@ export default async function HomePage() {
     <main className="min-h-screen bg-paper">
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-content items-center justify-between px-6 py-5">
-          <div className="flex items-baseline gap-2">
-            <span className="font-display text-2xl italic text-ink">Khedmati</span>
-            <span className="font-arabic text-lg text-emerald-dark">خدمتي</span>
+          <Logo className="h-8 sm:h-9" />
+          <div className="flex items-center gap-3">
+            <HeaderNav />
+            <ThemeToggle />
           </div>
-          <HeaderNav />
         </div>
       </header>
 
@@ -41,8 +42,8 @@ export default async function HomePage() {
             <p className="font-arabic mt-6 text-[15px] text-ink/50">خدمتك قريبة ليك</p>
           </div>
 
-          <div className="hidden aspect-[210/220] w-full sm:block">
-            <ZelligeMotif />
+          <div className="hidden items-center justify-center rounded-2xl border border-line bg-surface p-8 sm:flex">
+            <Logo variant="principal" className="w-full max-w-[280px]" />
           </div>
         </div>
       </section>
@@ -58,7 +59,7 @@ export default async function HomePage() {
             </h2>
             <a
               href="/artisans"
-              className="w-fit rounded-full bg-emerald px-4 py-2 text-[14px] font-medium text-paper hover:bg-emerald-dark"
+              className="w-fit rounded-full bg-emerald px-4 py-2 text-[14px] font-medium text-onbrand hover:bg-emerald-dark"
             >
               📍 Utiliser ma position
             </a>
@@ -66,8 +67,8 @@ export default async function HomePage() {
 
           <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {categories.map((cat, i) => {
-              const tint = i % 3 === 0 ? "bg-emerald-soft" : i % 3 === 1 ? "bg-clay-soft" : "bg-gold-soft";
-              const border = i % 3 === 0 ? "border-emerald/25" : i % 3 === 1 ? "border-clay/25" : "border-gold/30";
+              const tint = i % 3 === 0 ? "bg-emerald-soft" : i % 3 === 1 ? "bg-secondary-soft" : "bg-warning-soft";
+              const border = i % 3 === 0 ? "border-emerald/25" : i % 3 === 1 ? "border-secondary/25" : "border-warning/30";
               return (
                 <a
                   key={cat.slug}
@@ -99,7 +100,7 @@ export default async function HomePage() {
       {/* BANDEAU ARTISAN                                                   */}
       {/* ---------------------------------------------------------------- */}
       <section id="artisan" className="mx-auto max-w-content px-6 py-16">
-        <div className="flex flex-col items-start gap-4 rounded-2xl border border-line bg-white/50 p-8 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col items-start gap-4 rounded-2xl border border-line bg-surface/50 p-8 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="font-display text-[24px] italic text-ink">Vous êtes artisan ?</h2>
             <p className="mt-2 max-w-lg text-[15px] text-ink/70">
@@ -109,7 +110,7 @@ export default async function HomePage() {
           </div>
           <a
             href="/inscription/artisan"
-            className="shrink-0 rounded-xl bg-ink px-5 py-3 text-[15px] font-medium text-paper hover:bg-ink/90"
+            className="shrink-0 rounded-xl bg-ink px-5 py-3 text-[15px] font-medium text-onbrand hover:bg-ink/90"
           >
             Créer mon profil artisan
           </a>

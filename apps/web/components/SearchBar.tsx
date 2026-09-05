@@ -101,12 +101,12 @@ export function SearchBar() {
           onChange={(e) => setValue(e.target.value)}
           type="text"
           placeholder="Décrivez votre besoin... / نحتاج سباك قريب مني"
-          className="w-full flex-1 rounded-xl border border-line bg-white/70 px-4 py-3 text-[17px] text-ink placeholder:text-ink/40 focus:border-emerald"
+          className="w-full flex-1 rounded-xl border border-line bg-surface/70 px-4 py-3 text-[17px] text-ink placeholder:text-ink/40 focus:border-emerald"
         />
         <div className="flex shrink-0 gap-2">
           <button
             type="submit"
-            className="rounded-xl bg-emerald px-5 py-3 text-[15px] font-medium text-paper transition-colors hover:bg-emerald-dark"
+            className="rounded-xl bg-emerald px-5 py-3 text-[15px] font-medium text-onbrand transition-colors hover:bg-emerald-dark"
           >
             Rechercher
           </button>
@@ -117,14 +117,14 @@ export function SearchBar() {
             className={`rounded-xl border px-4 py-3 text-[15px] font-medium transition-colors ${
               isListening
                 ? "border-emerald bg-emerald-soft text-emerald-dark"
-                : "border-line bg-white/70 text-ink hover:border-emerald"
+                : "border-line bg-surface/70 text-ink hover:border-emerald"
             }`}
           >
             {isListening ? "Écoute…" : "Parler"}
           </button>
           <a
             href={`tel:${process.env.NEXT_PUBLIC_CALL_CENTER_NUMBER ?? "+213000000000"}`}
-            className="rounded-xl border border-clay/40 bg-clay-soft px-4 py-3 text-[15px] font-medium text-clay-dark transition-colors hover:border-clay"
+            className="rounded-xl border border-secondary/40 bg-secondary-soft px-4 py-3 text-[15px] font-medium text-secondary-dark transition-colors hover:border-secondary"
           >
             Appeler KHEDMATI
           </a>

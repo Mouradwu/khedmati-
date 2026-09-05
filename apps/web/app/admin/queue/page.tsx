@@ -6,11 +6,11 @@ import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api";
 
 const PRIORITY_LABELS: Record<string, { label: string; icon: string; className: string }> = {
-  PRIORITY: { label: "Prioritaire", icon: "🔴", className: "border-clay/40 bg-clay-soft text-clay-dark" },
-  TO_CALL: { label: "À appeler", icon: "🟠", className: "border-gold/40 bg-gold-soft text-ink" },
-  CALLBACK_REQUESTED: { label: "Rappel demandé", icon: "🟡", className: "border-gold/40 bg-gold-soft text-ink" },
+  PRIORITY: { label: "Prioritaire", icon: "🔴", className: "border-danger/40 bg-danger-soft text-danger-dark" },
+  TO_CALL: { label: "À appeler", icon: "🟠", className: "border-warning/40 bg-warning-soft text-ink" },
+  CALLBACK_REQUESTED: { label: "Rappel demandé", icon: "🟡", className: "border-warning/40 bg-warning-soft text-ink" },
   VALIDATED: { label: "Validé", icon: "🟢", className: "border-emerald/40 bg-emerald-soft text-emerald-dark" },
-  WAITING_FOR_INFO: { label: "En attente d'info", icon: "🔵", className: "border-line bg-white text-ink/70" },
+  WAITING_FOR_INFO: { label: "En attente d'info", icon: "🔵", className: "border-line bg-surface text-ink/70" },
   REFUSED: { label: "Refusé", icon: "⚫", className: "border-line bg-paperDim text-ink/50" },
 };
 
@@ -37,7 +37,7 @@ export default function QueuePage() {
       </p>
 
       {isLoading && <p className="mt-8 text-ink/50">Chargement de la file...</p>}
-      {error && <p className="mt-8 text-clay-dark">{error}</p>}
+      {error && <p className="mt-8 text-danger-dark">{error}</p>}
 
       {!isLoading && !error && cases.length === 0 && (
         <p className="mt-8 text-ink/50">Aucun dossier en attente pour le moment.</p>
@@ -51,7 +51,7 @@ export default function QueuePage() {
             <Link
               key={c.id}
               href={`/admin/cases/${c.id}`}
-              className="flex items-center justify-between rounded-xl border border-line bg-white/60 p-4 transition-colors hover:border-emerald"
+              className="flex items-center justify-between rounded-xl border border-line bg-surface/60 p-4 transition-colors hover:border-emerald"
             >
               <div className="flex items-center gap-4">
                 <span className={`rounded-full border px-3 py-1 text-[13px] font-medium ${prio.className}`}>

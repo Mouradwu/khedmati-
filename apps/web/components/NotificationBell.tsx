@@ -20,7 +20,7 @@ export function NotificationBell() {
     <a href="/notifications" className="relative text-ink/70 hover:text-ink">
       🔔
       {count > 0 && (
-        <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-clay px-1 text-[10px] font-medium text-paper">
+        <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-secondary px-1 text-[10px] font-medium text-onbrand">
           {count > 9 ? "9+" : count}
         </span>
       )}

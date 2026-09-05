@@ -44,7 +44,7 @@ export function HeaderNav() {
       )}
 
       {user && (
-        <button onClick={logout} className="hover:text-clay-dark">
+        <button onClick={logout} className="hover:text-secondary-dark">
           Déconnexion
         </button>
       )}

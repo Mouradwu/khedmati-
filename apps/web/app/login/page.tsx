@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth, ApiError } from "@/lib/auth";
+import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -33,16 +35,18 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-paper px-6">
+    <main className="relative flex min-h-screen items-center justify-center bg-paper px-6">
+      <div className="absolute right-6 top-6">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <span className="font-display text-2xl italic text-ink">Khedmati</span>
-          <span className="font-arabic ml-2 text-lg text-emerald-dark">خدمتي</span>
+        <div className="mb-8 flex justify-center">
+          <Logo variant="principal" className="h-32" />
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-4 rounded-2xl border border-line bg-white/60 p-6"
+          className="flex flex-col gap-4 rounded-2xl border border-line bg-surface/60 p-6"
         >
           <h1 className="font-display text-[20px] italic text-ink">Connexion</h1>
 
@@ -57,7 +61,7 @@ export default function LoginPage() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+213..."
-              className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink focus:border-emerald"
+              className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink focus:border-emerald"
             />
           </div>
 
@@ -71,18 +75,18 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink focus:border-emerald"
+              className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink focus:border-emerald"
             />
           </div>
 
           {error && (
-            <p className="rounded-lg bg-clay-soft px-3 py-2 text-[13px] text-clay-dark">{error}</p>
+            <p className="rounded-lg bg-danger-soft px-3 py-2 text-[13px] text-danger-dark">{error}</p>
           )}
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="mt-2 rounded-xl bg-emerald px-4 py-2.5 text-[15px] font-medium text-paper transition-colors hover:bg-emerald-dark disabled:opacity-60"
+            className="mt-2 rounded-xl bg-emerald px-4 py-2.5 text-[15px] font-medium text-onbrand transition-colors hover:bg-emerald-dark disabled:opacity-60"
           >
             {isSubmitting ? "Connexion..." : "Se connecter"}
           </button>

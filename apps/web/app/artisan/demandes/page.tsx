@@ -67,10 +67,10 @@ export default function ArtisanRequestsPage() {
       </p>
 
       {isLoading && <p className="mt-8 text-ink/50">Chargement...</p>}
-      {error && <p className="mt-4 rounded-lg bg-clay-soft px-3 py-2 text-[13px] text-clay-dark">{error}</p>}
+      {error && <p className="mt-4 rounded-lg bg-danger-soft px-3 py-2 text-[13px] text-danger-dark">{error}</p>}
 
       {!isLoading && matches.length === 0 && (
-        <div className="mt-8 rounded-xl border border-line bg-white/60 p-6">
+        <div className="mt-8 rounded-xl border border-line bg-surface/60 p-6">
           <p className="text-ink/70">
             Aucune demande pour l'instant. Vérifiez que{" "}
             <a href="/artisan/profil" className="text-emerald-dark hover:underline">
@@ -84,7 +84,7 @@ export default function ArtisanRequestsPage() {
 
       <div className="mt-6 flex flex-col gap-3">
         {matches.map((m) => (
-          <div key={m.id} className="rounded-xl border border-line bg-white/60 p-5">
+          <div key={m.id} className="rounded-xl border border-line bg-surface/60 p-5">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-[15px] text-ink">{m.request?.rawDescription}</p>
@@ -93,7 +93,7 @@ export default function ArtisanRequestsPage() {
                   {m.distanceKm != null ? ` · ${m.distanceKm} km` : ""}
                 </p>
               </div>
-              <span className="shrink-0 rounded-full bg-gold-soft px-3 py-1 text-[12px] font-medium text-ink">
+              <span className="shrink-0 rounded-full bg-warning-soft px-3 py-1 text-[12px] font-medium text-ink">
                 {m.status}
               </span>
             </div>
@@ -103,14 +103,14 @@ export default function ArtisanRequestsPage() {
                 <button
                   onClick={() => accept(m.id)}
                   disabled={busyId === m.id}
-                  className="rounded-xl bg-emerald px-4 py-2 text-[14px] font-medium text-paper hover:bg-emerald-dark disabled:opacity-60"
+                  className="rounded-xl bg-emerald px-4 py-2 text-[14px] font-medium text-onbrand hover:bg-emerald-dark disabled:opacity-60"
                 >
                   🟢 Accepter
                 </button>
                 <button
                   onClick={() => setDecliningId(m.id)}
                   disabled={busyId === m.id}
-                  className="rounded-xl border border-line px-4 py-2 text-[14px] font-medium text-ink/70 hover:border-clay hover:text-clay-dark disabled:opacity-60"
+                  className="rounded-xl border border-line px-4 py-2 text-[14px] font-medium text-ink/70 hover:border-secondary hover:text-secondary-dark disabled:opacity-60"
                 >
                   🔴 Décliner
                 </button>
@@ -126,7 +126,7 @@ export default function ArtisanRequestsPage() {
                       key={reason}
                       onClick={() => decline(m.id, reason)}
                       disabled={busyId === m.id}
-                      className="rounded-full border border-line bg-white px-3 py-1.5 text-[13px] text-ink hover:border-clay disabled:opacity-60"
+                      className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] text-ink hover:border-secondary disabled:opacity-60"
                     >
                       {reason}
                     </button>

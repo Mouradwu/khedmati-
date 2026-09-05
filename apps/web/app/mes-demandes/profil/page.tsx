@@ -38,11 +38,11 @@ export default function ClientProfilePage() {
         chez vous.
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4 rounded-2xl border border-line bg-white/60 p-6">
+      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4 rounded-2xl border border-line bg-surface/60 p-6">
         <LocationForm onChange={setLocation} />
 
         {error && (
-          <p className="rounded-lg bg-clay-soft px-3 py-2 text-[13px] text-clay-dark">{error}</p>
+          <p className="rounded-lg bg-danger-soft px-3 py-2 text-[13px] text-danger-dark">{error}</p>
         )}
         {saved && (
           <p className="rounded-lg bg-emerald-soft px-3 py-2 text-[13px] text-emerald-dark">
@@ -54,7 +54,7 @@ export default function ClientProfilePage() {
           <button
             type="submit"
             disabled={isSubmitting || !location}
-            className="rounded-xl bg-emerald px-5 py-2.5 text-[15px] font-medium text-paper hover:bg-emerald-dark disabled:opacity-60"
+            className="rounded-xl bg-emerald px-5 py-2.5 text-[15px] font-medium text-onbrand hover:bg-emerald-dark disabled:opacity-60"
           >
             {isSubmitting ? "Enregistrement..." : "Enregistrer"}
           </button>

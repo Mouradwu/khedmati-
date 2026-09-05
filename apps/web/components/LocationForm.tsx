@@ -71,7 +71,7 @@ export function LocationForm({
             setCoords(null);
             emit({ wilayaCode: e.target.value, coords: null });
           }}
-          className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink"
+          className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink"
         >
           {WILAYAS.map((w) => (
             <option key={w.code} value={w.code}>
@@ -92,7 +92,7 @@ export function LocationForm({
               setDaira(e.target.value);
               emit({ daira: e.target.value });
             }}
-            className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink focus:border-emerald"
+            className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink focus:border-emerald"
           />
         </div>
         <div className="flex flex-1 flex-col gap-1.5">
@@ -105,7 +105,7 @@ export function LocationForm({
               setCommune(e.target.value);
               emit({ commune: e.target.value });
             }}
-            className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink focus:border-emerald"
+            className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink focus:border-emerald"
           />
         </div>
       </div>
@@ -116,7 +116,7 @@ export function LocationForm({
         className={`self-start rounded-xl border px-4 py-2 text-[13px] font-medium transition-colors ${
           gpsStatus === "done"
             ? "border-emerald bg-emerald-soft text-emerald-dark"
-            : "border-line bg-white text-ink/70 hover:border-emerald"
+            : "border-line bg-surface text-ink/70 hover:border-emerald"
         }`}
       >
         {gpsStatus === "locating"
@@ -126,7 +126,7 @@ export function LocationForm({
             : "📍 Utiliser ma position GPS précise"}
       </button>
       {gpsStatus === "error" && (
-        <p className="text-[12px] text-clay-dark">
+        <p className="text-[12px] text-secondary-dark">
           Position GPS indisponible — la position approximative du chef-lieu de wilaya sera
           utilisée à la place.
         </p>

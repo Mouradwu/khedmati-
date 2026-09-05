@@ -40,7 +40,7 @@ export default function NotificationsPage() {
             key={n.id}
             onClick={() => n.status !== "READ" && handleRead(n.id)}
             className={`cursor-pointer rounded-xl border p-4 transition-colors ${
-              n.status === "READ" ? "border-line bg-white/40" : "border-emerald/30 bg-emerald-soft"
+              n.status === "READ" ? "border-line bg-surface/40" : "border-emerald/30 bg-emerald-soft"
             }`}
           >
             <p className="text-[14px] font-medium text-ink">{n.title}</p>

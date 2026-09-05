@@ -35,7 +35,7 @@ export default function NewOfferPage() {
         sanitaires. » Un opérateur KHEDMATI vous appellera pour valider avant publication.
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4 rounded-2xl border border-line bg-white/60 p-6">
+      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4 rounded-2xl border border-line bg-surface/60 p-6">
         <div className="flex flex-col gap-1.5">
           <label className="text-[13px] font-medium text-ink/70">Votre offre</label>
           <textarea
@@ -44,18 +44,18 @@ export default function NewOfferPage() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Décrivez votre métier, vos spécialités, votre zone d'intervention..."
-            className="rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink focus:border-emerald"
+            className="rounded-xl border border-line bg-surface px-4 py-3 text-[15px] text-ink focus:border-emerald"
           />
         </div>
 
         {error && (
-          <p className="rounded-lg bg-clay-soft px-3 py-2 text-[13px] text-clay-dark">{error}</p>
+          <p className="rounded-lg bg-danger-soft px-3 py-2 text-[13px] text-danger-dark">{error}</p>
         )}
 
         <button
           type="submit"
           disabled={isSubmitting}
-          className="rounded-xl bg-clay px-5 py-2.5 text-[15px] font-medium text-paper hover:bg-clay-dark disabled:opacity-60"
+          className="rounded-xl bg-secondary px-5 py-2.5 text-[15px] font-medium text-onbrand hover:bg-secondary-dark disabled:opacity-60"
         >
           {isSubmitting ? "Envoi..." : "Envoyer mon offre"}
         </button>

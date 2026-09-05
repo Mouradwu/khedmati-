@@ -33,7 +33,7 @@ export default function AdminClientsPage() {
       <h1 className="font-display text-[26px] italic text-ink">Demandeurs</h1>
       {isLoading && <p className="mt-6 text-ink/50">Chargement...</p>}
       {!isLoading && (
-        <div className="mt-6 overflow-x-auto rounded-xl border border-line bg-white/60">
+        <div className="mt-6 overflow-x-auto rounded-xl border border-line bg-surface/60">
           <table className="w-full text-left text-[13px]">
             <thead className="border-b border-line text-ink/50">
               <tr>
@@ -53,7 +53,7 @@ export default function AdminClientsPage() {
                   <td className="px-4 py-3 text-ink/70">{c.wilaya ? `${c.wilaya}${c.commune ? " / " + c.commune : ""}` : "—"}</td>
                   <td className="px-4 py-3 text-ink/70">{c.requestCount}</td>
                   <td className="px-4 py-3">
-                    <span className={`rounded-full px-2 py-0.5 text-[12px] ${c.accountStatus === "ACTIVE" ? "bg-emerald-soft text-emerald-dark" : "bg-clay-soft text-clay-dark"}`}>
+                    <span className={`rounded-full px-2 py-0.5 text-[12px] ${c.accountStatus === "ACTIVE" ? "bg-emerald-soft text-emerald-dark" : "bg-secondary-soft text-secondary-dark"}`}>
                       {c.accountStatus}
                     </span>
                   </td>
@@ -61,7 +61,7 @@ export default function AdminClientsPage() {
                     <button
                       onClick={() => toggleStatus(c.userId, c.accountStatus)}
                       disabled={busyId === c.userId}
-                      className="rounded-full border border-line px-2 py-1 text-[12px] text-ink/70 hover:border-clay disabled:opacity-50"
+                      className="rounded-full border border-line px-2 py-1 text-[12px] text-ink/70 hover:border-secondary disabled:opacity-50"
                     >
                       {c.accountStatus === "SUSPENDED" ? "Réactiver" : "Suspendre"}
                     </button>

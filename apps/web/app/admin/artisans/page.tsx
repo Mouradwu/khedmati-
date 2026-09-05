@@ -33,7 +33,7 @@ export default function AdminArtisansPage() {
       <h1 className="font-display text-[26px] italic text-ink">Artisans</h1>
       {isLoading && <p className="mt-6 text-ink/50">Chargement...</p>}
       {!isLoading && (
-        <div className="mt-6 overflow-x-auto rounded-xl border border-line bg-white/60">
+        <div className="mt-6 overflow-x-auto rounded-xl border border-line bg-surface/60">
           <table className="w-full text-left text-[13px]">
             <thead className="border-b border-line text-ink/50">
               <tr>
@@ -57,12 +57,12 @@ export default function AdminArtisansPage() {
                   <td className="px-4 py-3 text-ink/70">{a.professions.join(", ") || "—"}</td>
                   <td className="px-4 py-3 text-ink/70">{a.wilaya ? `${a.wilaya}${a.commune ? " / " + a.commune : ""}` : "—"}</td>
                   <td className="px-4 py-3">
-                    <span className={`rounded-full px-2 py-0.5 text-[12px] ${a.isAcceptingRequests ? "bg-emerald-soft text-emerald-dark" : "bg-clay-soft text-clay-dark"}`}>
+                    <span className={`rounded-full px-2 py-0.5 text-[12px] ${a.isAcceptingRequests ? "bg-emerald-soft text-emerald-dark" : "bg-secondary-soft text-secondary-dark"}`}>
                       {a.isAcceptingRequests ? "🟢" : "🔴"}
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`rounded-full px-2 py-0.5 text-[12px] ${a.accountStatus === "ACTIVE" ? "bg-emerald-soft text-emerald-dark" : "bg-clay-soft text-clay-dark"}`}>
+                    <span className={`rounded-full px-2 py-0.5 text-[12px] ${a.accountStatus === "ACTIVE" ? "bg-emerald-soft text-emerald-dark" : "bg-secondary-soft text-secondary-dark"}`}>
                       {a.accountStatus}
                     </span>
                   </td>
@@ -73,7 +73,7 @@ export default function AdminArtisansPage() {
                     <button
                       onClick={() => toggleStatus(a.userId, a.accountStatus)}
                       disabled={busyId === a.userId}
-                      className="rounded-full border border-line px-2 py-1 text-[12px] text-ink/70 hover:border-clay disabled:opacity-50"
+                      className="rounded-full border border-line px-2 py-1 text-[12px] text-ink/70 hover:border-secondary disabled:opacity-50"
                     >
                       {a.accountStatus === "SUSPENDED" ? "Réactiver" : "Suspendre"}
                     </button>

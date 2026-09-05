@@ -63,7 +63,7 @@ export default function RequestDetailPage() {
   };
 
   if (isLoading) return <p className="text-ink/50">Chargement...</p>;
-  if (error || !request) return <p className="text-clay-dark">{error ?? "Demande introuvable."}</p>;
+  if (error || !request) return <p className="text-danger-dark">{error ?? "Demande introuvable."}</p>;
 
   const status = REQUEST_STATUS_LABELS[request.status] ?? { label: request.status, className: "bg-paperDim text-ink/60" };
   const isBeingValidated = ["SUBMITTED", "PENDING_VALIDATION", "CALL_PENDING", "CALL_IN_PROGRESS"].includes(request.status);
@@ -80,13 +80,13 @@ export default function RequestDetailPage() {
         <span className={`rounded-full px-3 py-1 text-[13px] font-medium ${status.className}`}>{status.label}</span>
       </div>
 
-      <div className="mt-4 rounded-xl border border-line bg-white/60 p-5">
+      <div className="mt-4 rounded-xl border border-line bg-surface/60 p-5">
         <p className="text-[15px] text-ink">{request.rawDescription}</p>
         <p className="mt-3 text-[13px] text-ink/50">Envoyée le {new Date(request.createdAt).toLocaleString("fr-FR")}</p>
       </div>
 
       {isBeingValidated && (
-        <p className="mt-4 rounded-lg bg-gold-soft px-4 py-3 text-[14px] text-ink">
+        <p className="mt-4 rounded-lg bg-warning-soft px-4 py-3 text-[14px] text-ink">
           📞 Un opérateur KHEDMATI va vous appeler pour confirmer votre demande avant de la
           transmettre aux artisans. C'est notre règle de confiance — aucune demande n'est publiée
           sans validation.
@@ -104,14 +104,14 @@ export default function RequestDetailPage() {
         <button
           onClick={handleMarkCompleted}
           disabled={isBusy}
-          className="mt-4 rounded-xl bg-ink px-5 py-2.5 text-[14px] font-medium text-paper hover:bg-ink/90 disabled:opacity-60"
+          className="mt-4 rounded-xl bg-ink px-5 py-2.5 text-[14px] font-medium text-onbrand hover:bg-ink/90 disabled:opacity-60"
         >
           {isBusy ? "..." : "✓ Marquer l'intervention comme terminée"}
         </button>
       )}
 
       {request.status === "COMPLETED" && acceptedMatch && !reviewSent && (
-        <div className="mt-4 rounded-xl border border-line bg-white/60 p-5">
+        <div className="mt-4 rounded-xl border border-line bg-surface/60 p-5">
           <h2 className="text-[15px] font-medium text-ink">Laisser un avis</h2>
           <div className="mt-2 flex gap-1 text-[24px]">
             {[1, 2, 3, 4, 5].map((n) => (
@@ -125,12 +125,12 @@ export default function RequestDetailPage() {
             value={reviewComment}
             onChange={(e) => setReviewComment(e.target.value)}
             placeholder="Votre commentaire (facultatif)"
-            className="mt-3 w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink focus:border-emerald"
+            className="mt-3 w-full rounded-xl border border-line bg-surface px-4 py-3 text-[15px] text-ink focus:border-emerald"
           />
           <button
             onClick={() => handleSubmitReview(acceptedMatch.professional.id)}
             disabled={isBusy}
-            className="mt-3 rounded-xl bg-emerald px-5 py-2.5 text-[14px] font-medium text-paper hover:bg-emerald-dark disabled:opacity-60"
+            className="mt-3 rounded-xl bg-emerald px-5 py-2.5 text-[14px] font-medium text-onbrand hover:bg-emerald-dark disabled:opacity-60"
           >
             {isBusy ? "Envoi..." : "Envoyer mon avis"}
           </button>
@@ -151,7 +151,7 @@ export default function RequestDetailPage() {
               const isAccepted = m.status === "ACCEPTED";
               const isDeclined = m.status === "DECLINED";
               return (
-                <div key={m.id} className="rounded-xl border border-line bg-white/60 p-4">
+                <div key={m.id} className="rounded-xl border border-line bg-surface/60 p-4">
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="text-[15px] text-ink">
@@ -174,7 +174,7 @@ export default function RequestDetailPage() {
                         🔓 Contact débloqué — l'artisan a accepté votre demande
                       </p>
                       <div className="mt-2 flex gap-2">
-                        <a href={`tel:${m.professional.phone}`} className="rounded-xl bg-emerald px-4 py-2 text-[13px] font-medium text-paper hover:bg-emerald-dark">
+                        <a href={`tel:${m.professional.phone}`} className="rounded-xl bg-emerald px-4 py-2 text-[13px] font-medium text-onbrand hover:bg-emerald-dark">
                           📞 Appeler
                         </a>
                         <a

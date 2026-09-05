@@ -27,14 +27,14 @@ export default function MyRequestsPage() {
         <h1 className="font-display text-[26px] italic text-ink">Mes demandes</h1>
         <a
           href="/mes-demandes/nouvelle"
-          className="rounded-xl bg-emerald px-4 py-2 text-[14px] font-medium text-paper hover:bg-emerald-dark"
+          className="rounded-xl bg-emerald px-4 py-2 text-[14px] font-medium text-onbrand hover:bg-emerald-dark"
         >
           + Nouvelle demande
         </a>
       </div>
 
       {isLoading && <p className="mt-8 text-ink/50">Chargement...</p>}
-      {error && <p className="mt-8 text-clay-dark">{error}</p>}
+      {error && <p className="mt-8 text-danger-dark">{error}</p>}
       {!isLoading && !error && requests.length === 0 && (
         <p className="mt-8 text-ink/50">
           Vous n'avez pas encore de demande.{" "}
@@ -51,7 +51,7 @@ export default function MyRequestsPage() {
             <Link
               key={r.id}
               href={`/mes-demandes/${r.id}`}
-              className="flex items-center justify-between rounded-xl border border-line bg-white/60 p-4 hover:border-emerald"
+              className="flex items-center justify-between rounded-xl border border-line bg-surface/60 p-4 hover:border-emerald"
             >
               <div>
                 <p className="max-w-md truncate text-[15px] text-ink">{r.rawDescription}</p>

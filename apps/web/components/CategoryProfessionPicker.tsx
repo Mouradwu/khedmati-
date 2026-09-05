@@ -27,8 +27,8 @@ export function CategoryProfessionPicker({
     return (
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
         {categories.map((cat, i) => {
-          const tint = i % 3 === 0 ? "bg-emerald-soft" : i % 3 === 1 ? "bg-clay-soft" : "bg-gold-soft";
-          const border = i % 3 === 0 ? "border-emerald/25" : i % 3 === 1 ? "border-clay/25" : "border-gold/30";
+          const tint = i % 3 === 0 ? "bg-emerald-soft" : i % 3 === 1 ? "bg-secondary-soft" : "bg-warning-soft";
+          const border = i % 3 === 0 ? "border-emerald/25" : i % 3 === 1 ? "border-secondary/25" : "border-warning/30";
           return (
             <button
               key={cat.id}
@@ -72,8 +72,8 @@ export function CategoryProfessionPicker({
               onClick={() => onSelect(prof, activeCategory)}
               className={`rounded-full border px-4 py-2 text-[14px] font-medium transition-colors ${
                 isSelected
-                  ? "border-emerald bg-emerald text-paper"
-                  : "border-line bg-white text-ink hover:border-emerald"
+                  ? "border-emerald bg-emerald text-onbrand"
+                  : "border-line bg-surface text-ink hover:border-emerald"
               }`}
             >
               {prof.name}

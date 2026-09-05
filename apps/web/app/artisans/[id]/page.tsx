@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api";
+import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function ArtisanPublicProfilePage() {
   const params = useParams();
@@ -50,7 +52,7 @@ export default function ArtisanPublicProfilePage() {
 
   if (error || !profile) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-paper text-clay-dark">
+      <main className="flex min-h-screen items-center justify-center bg-paper text-secondary-dark">
         {error ?? "Profil introuvable."}
       </main>
     );
@@ -62,14 +64,20 @@ export default function ArtisanPublicProfilePage() {
     <main className="min-h-screen bg-paper">
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-content items-center justify-between px-6 py-5">
-          <a href="/artisans" className="text-[14px] text-ink/60 hover:text-ink">
-            ← Retour à la recherche
+          <a href="/" className="flex items-baseline gap-2">
+            <Logo variant="horizontal" className="h-7" />
           </a>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <a href="/artisans" className="text-[14px] text-ink/60 hover:text-ink">
+              ← Retour à la recherche
+            </a>
+          </div>
         </div>
       </header>
 
       <div className="mx-auto max-w-content px-6 py-10">
-        <div className="rounded-2xl border border-line bg-white/60 p-8">
+        <div className="rounded-2xl border border-line bg-surface/60 p-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h1 className="font-display text-[28px] italic text-ink">{displayName}</h1>
@@ -78,7 +86,7 @@ export default function ArtisanPublicProfilePage() {
                   className={`rounded-full px-3 py-1 text-[13px] font-medium ${
                     profile.isAcceptingRequests
                       ? "bg-emerald-soft text-emerald-dark"
-                      : "bg-clay-soft text-clay-dark"
+                      : "bg-secondary-soft text-secondary-dark"
                   }`}
                 >
                   {profile.isAcceptingRequests ? "🟢 Disponible" : "🔴 Indisponible actuellement"}
@@ -103,7 +111,7 @@ export default function ArtisanPublicProfilePage() {
               <h2 className="text-[13px] font-medium text-ink/70">Services</h2>
               <div className="mt-2 flex flex-wrap gap-2">
                 {profile.services.map((s: any) => (
-                  <span key={s.id} className="rounded-full border border-line bg-white px-3 py-1 text-[13px] text-ink">
+                  <span key={s.id} className="rounded-full border border-line bg-surface px-3 py-1 text-[13px] text-ink">
                     {s.service?.name}
                   </span>
                 ))}
@@ -125,7 +133,7 @@ export default function ArtisanPublicProfilePage() {
 
           <button
             onClick={requestIntervention}
-            className="mt-8 w-full rounded-xl bg-emerald px-6 py-3.5 text-[16px] font-medium text-paper hover:bg-emerald-dark sm:w-auto"
+            className="mt-8 w-full rounded-xl bg-emerald px-6 py-3.5 text-[16px] font-medium text-onbrand hover:bg-emerald-dark sm:w-auto"
           >
             Demander une intervention
           </button>
@@ -140,7 +148,7 @@ export default function ArtisanPublicProfilePage() {
             <h2 className="text-[15px] font-medium text-ink">Avis</h2>
             <div className="mt-3 flex flex-col gap-3">
               {profile.reviews.map((r: any) => (
-                <div key={r.id} className="rounded-xl border border-line bg-white/60 p-4">
+                <div key={r.id} className="rounded-xl border border-line bg-surface/60 p-4">
                   <p className="text-[14px] text-ink">{"⭐".repeat(r.ratingOverall)}</p>
                   {r.comment && <p className="mt-1 text-[14px] text-ink/70">{r.comment}</p>}
                 </div>

@@ -100,7 +100,7 @@ export default function CaseDetailPage() {
   };
 
   if (isLoading) return <p className="text-ink/50">Chargement...</p>;
-  if (!caseData) return <p className="text-clay-dark">{error ?? "Dossier introuvable."}</p>;
+  if (!caseData) return <p className="text-danger-dark">{error ?? "Dossier introuvable."}</p>;
 
   const target = caseData.serviceRequest ?? caseData.offer;
   const isResolved = Boolean(caseData.resolvedAt);
@@ -118,7 +118,7 @@ export default function CaseDetailPage() {
         {caseData.targetType === "SERVICE_REQUEST" ? "Demande client" : "Offre artisan"}
       </h1>
 
-      <div className="mt-4 rounded-xl border border-line bg-white/60 p-5">
+      <div className="mt-4 rounded-xl border border-line bg-surface/60 p-5">
         <p className="text-[15px] text-ink">{target?.rawDescription}</p>
         {target?.urgency && (
           <p className="mt-2 text-[13px] text-ink/50">Urgence : {target.urgency}</p>
@@ -154,7 +154,7 @@ export default function CaseDetailPage() {
         </div>
       )}
 
-      {error && <p className="mt-4 rounded-lg bg-clay-soft px-3 py-2 text-[13px] text-clay-dark">{error}</p>}
+      {error && <p className="mt-4 rounded-lg bg-danger-soft px-3 py-2 text-[13px] text-danger-dark">{error}</p>}
 
       <div className="mt-6">
         {isResolved ? (
@@ -165,12 +165,12 @@ export default function CaseDetailPage() {
           <button
             onClick={handleStartCall}
             disabled={isBusy}
-            className="rounded-xl bg-emerald px-5 py-2.5 text-[15px] font-medium text-paper hover:bg-emerald-dark disabled:opacity-60"
+            className="rounded-xl bg-emerald px-5 py-2.5 text-[15px] font-medium text-onbrand hover:bg-emerald-dark disabled:opacity-60"
           >
             {isBusy ? "Démarrage..." : "📞 Démarrer l'appel"}
           </button>
         ) : (
-          <form onSubmit={handleResolve} className="flex flex-col gap-3 rounded-xl border border-line bg-white/60 p-5">
+          <form onSubmit={handleResolve} className="flex flex-col gap-3 rounded-xl border border-line bg-surface/60 p-5">
             <p className="text-[13px] font-medium text-emerald-dark">Appel en cours...</p>
 
             <div className="flex flex-col gap-1.5">
@@ -178,7 +178,7 @@ export default function CaseDetailPage() {
               <select
                 value={outcome}
                 onChange={(e) => setOutcome(e.target.value)}
-                className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink"
+                className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink"
               >
                 {OUTCOMES.map((o) => (
                   <option key={o.value} value={o.value}>
@@ -194,7 +194,7 @@ export default function CaseDetailPage() {
                 value={summary}
                 onChange={(e) => setSummary(e.target.value)}
                 rows={2}
-                className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink"
+                className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink"
               />
             </div>
 
@@ -204,14 +204,14 @@ export default function CaseDetailPage() {
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 rows={2}
-                className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink"
+                className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink"
               />
             </div>
 
             <button
               type="submit"
               disabled={isBusy}
-              className="rounded-xl bg-ink px-5 py-2.5 text-[15px] font-medium text-paper hover:bg-ink/90 disabled:opacity-60"
+              className="rounded-xl bg-ink px-5 py-2.5 text-[15px] font-medium text-onbrand hover:bg-ink/90 disabled:opacity-60"
             >
               {isBusy ? "Envoi..." : "Valider le résultat"}
             </button>
@@ -222,7 +222,7 @@ export default function CaseDetailPage() {
           <button
             onClick={handlePublish}
             disabled={isBusy}
-            className="mt-3 rounded-xl border border-emerald bg-emerald-soft px-5 py-2.5 text-[15px] font-medium text-emerald-dark hover:bg-emerald hover:text-paper disabled:opacity-60"
+            className="mt-3 rounded-xl border border-emerald bg-emerald-soft px-5 py-2.5 text-[15px] font-medium text-emerald-dark hover:bg-emerald hover:text-onbrand disabled:opacity-60"
           >
             {isBusy ? "Publication..." : "🚀 Publier et rechercher des artisans"}
           </button>

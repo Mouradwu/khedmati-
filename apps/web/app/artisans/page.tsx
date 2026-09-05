@@ -6,6 +6,8 @@ import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { WILAYAS } from "@/lib/wilayas";
 import { CategoryProfessionPicker } from "@/components/CategoryProfessionPicker";
+import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const RADIUS_OPTIONS = [1, 5, 10, 20, 50];
 
@@ -113,9 +115,12 @@ function ArtisansPageContent() {
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-content items-center justify-between px-6 py-5">
           <a href="/" className="flex items-baseline gap-2">
-            <span className="font-display text-2xl italic text-ink">Khedmati</span>
+            <Logo variant="horizontal" className="h-8" />
           </a>
-          <a href="/" className="text-[14px] text-ink/60 hover:text-ink">← Accueil</a>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <a href="/" className="text-[14px] text-ink/60 hover:text-ink">← Accueil</a>
+          </div>
         </div>
       </header>
 
@@ -126,7 +131,7 @@ function ArtisansPageContent() {
         </p>
 
         {/* Localisation + rayon ------------------------------------------------ */}
-        <div className="mt-6 flex flex-wrap items-end gap-4 rounded-2xl border border-line bg-white/60 p-5">
+        <div className="mt-6 flex flex-wrap items-end gap-4 rounded-2xl border border-line bg-surface/60 p-5">
           <div className="flex flex-col gap-1.5">
             <label className="text-[13px] font-medium text-ink/70">Wilaya</label>
             <select
@@ -136,7 +141,7 @@ function ArtisansPageContent() {
                 setCoords(null);
                 setGpsStatus("idle");
               }}
-              className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink"
+              className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink"
             >
               {WILAYAS.map((w) => (
                 <option key={w.code} value={w.code}>{w.code} — {w.name}</option>
@@ -153,7 +158,7 @@ function ArtisansPageContent() {
                   type="button"
                   onClick={() => setRadiusKm(r)}
                   className={`rounded-full border px-3 py-1.5 text-[13px] font-medium transition-colors ${
-                    radiusKm === r ? "border-emerald bg-emerald-soft text-emerald-dark" : "border-line bg-white text-ink/70 hover:border-emerald"
+                    radiusKm === r ? "border-emerald bg-emerald-soft text-emerald-dark" : "border-line bg-surface text-ink/70 hover:border-emerald"
                   }`}
                 >
                   {r} km
@@ -166,7 +171,7 @@ function ArtisansPageContent() {
             type="button"
             onClick={useGps}
             className={`rounded-xl border px-4 py-2.5 text-[13px] font-medium transition-colors ${
-              gpsStatus === "done" ? "border-emerald bg-emerald-soft text-emerald-dark" : "border-line bg-white text-ink/70 hover:border-emerald"
+              gpsStatus === "done" ? "border-emerald bg-emerald-soft text-emerald-dark" : "border-line bg-surface text-ink/70 hover:border-emerald"
             }`}
           >
             {gpsStatus === "locating" ? "Localisation..." : gpsStatus === "done" ? "✓ Position GPS utilisée" : "📍 Utiliser ma position GPS"}
@@ -197,12 +202,12 @@ function ArtisansPageContent() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-[15px] font-medium text-ink">{selectedProfession.name}s disponibles</h2>
               <div className="flex gap-2">
-                <select value={minRating} onChange={(e) => setMinRating(Number(e.target.value))} className="rounded-full border border-line bg-white px-3 py-1.5 text-[13px] text-ink">
+                <select value={minRating} onChange={(e) => setMinRating(Number(e.target.value))} className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] text-ink">
                   <option value={0}>Toutes les notes</option>
                   <option value={4}>⭐ 4+</option>
                   <option value={4.5}>⭐ 4.5+</option>
                 </select>
-                <select value={minExperience} onChange={(e) => setMinExperience(Number(e.target.value))} className="rounded-full border border-line bg-white px-3 py-1.5 text-[13px] text-ink">
+                <select value={minExperience} onChange={(e) => setMinExperience(Number(e.target.value))} className="rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] text-ink">
                   <option value={0}>Toute expérience</option>
                   <option value={1}>1 an et +</option>
                   <option value={5}>5 ans et +</option>
@@ -228,7 +233,7 @@ function ArtisansPageContent() {
               return (
                 <div className="mt-3 flex flex-col gap-3">
                   {filtered.map((pro) => (
-                    <div key={pro.id} className="flex items-center justify-between rounded-xl border border-line bg-white/60 p-4">
+                    <div key={pro.id} className="flex items-center justify-between rounded-xl border border-line bg-surface/60 p-4">
                       <a href={`/artisans/${pro.id}`} className="flex-1 hover:opacity-80">
                         <p className="text-[15px] font-medium text-ink">
                           {pro.firstName} {pro.lastName}
@@ -241,7 +246,7 @@ function ArtisansPageContent() {
                       </a>
                       <button
                         onClick={() => requestFrom(pro)}
-                        className="shrink-0 rounded-xl bg-emerald px-4 py-2 text-[14px] font-medium text-paper hover:bg-emerald-dark"
+                        className="shrink-0 rounded-xl bg-emerald px-4 py-2 text-[14px] font-medium text-onbrand hover:bg-emerald-dark"
                       >
                         Demander une intervention
                       </button>

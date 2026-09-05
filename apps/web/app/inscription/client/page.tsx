@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth, ApiError } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { LocationForm, LocationValue } from "@/components/LocationForm";
+import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 function ClientRegisterWizard() {
   const router = useRouter();
@@ -55,10 +57,13 @@ function ClientRegisterWizard() {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-paper px-6 py-12">
+    <main className="relative flex min-h-screen items-center justify-center bg-paper px-6 py-12">
+      <div className="absolute right-6 top-6">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-sm">
-        <div className="mb-6 text-center">
-          <span className="font-display text-2xl italic text-ink">Khedmati</span>
+        <div className="mb-6 flex justify-center">
+          <Logo variant="principal" className="h-24" />
         </div>
 
         <div className="mb-4 flex items-center gap-2">
@@ -67,45 +72,45 @@ function ClientRegisterWizard() {
         </div>
 
         {step === 1 && (
-          <form onSubmit={handleCreateAccount} className="flex flex-col gap-4 rounded-2xl border border-line bg-white/60 p-6">
+          <form onSubmit={handleCreateAccount} className="flex flex-col gap-4 rounded-2xl border border-line bg-surface/60 p-6">
             <h1 className="font-display text-[20px] italic text-ink">Créer mon compte</h1>
 
             <div className="flex gap-3">
               <div className="flex flex-1 flex-col gap-1.5">
                 <label className="text-[13px] font-medium text-ink/70">Prénom</label>
-                <input required value={firstName} onChange={(e) => setFirstName(e.target.value)} className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink focus:border-emerald" />
+                <input required value={firstName} onChange={(e) => setFirstName(e.target.value)} className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink focus:border-emerald" />
               </div>
               <div className="flex flex-1 flex-col gap-1.5">
                 <label className="text-[13px] font-medium text-ink/70">Nom</label>
-                <input required value={lastName} onChange={(e) => setLastName(e.target.value)} className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink focus:border-emerald" />
+                <input required value={lastName} onChange={(e) => setLastName(e.target.value)} className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink focus:border-emerald" />
               </div>
             </div>
 
             <div className="flex flex-col gap-1.5">
               <label className="text-[13px] font-medium text-ink/70">Téléphone</label>
-              <input type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+213..." className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink focus:border-emerald" />
+              <input type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+213..." className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink focus:border-emerald" />
             </div>
 
             <div className="flex flex-col gap-1.5">
               <label className="text-[13px] font-medium text-ink/70">Email <span className="text-ink/40">(facultatif)</span></label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink focus:border-emerald" />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink focus:border-emerald" />
             </div>
 
             <div className="flex flex-col gap-1.5">
               <label className="text-[13px] font-medium text-ink/70">Mot de passe</label>
-              <input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className="rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink focus:border-emerald" />
+              <input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink focus:border-emerald" />
             </div>
 
-            {error && <p className="rounded-lg bg-clay-soft px-3 py-2 text-[13px] text-clay-dark">{error}</p>}
+            {error && <p className="rounded-lg bg-danger-soft px-3 py-2 text-[13px] text-danger-dark">{error}</p>}
 
-            <button type="submit" disabled={isSubmitting} className="mt-2 rounded-xl bg-emerald px-4 py-2.5 text-[15px] font-medium text-paper hover:bg-emerald-dark disabled:opacity-60">
+            <button type="submit" disabled={isSubmitting} className="mt-2 rounded-xl bg-emerald px-4 py-2.5 text-[15px] font-medium text-onbrand hover:bg-emerald-dark disabled:opacity-60">
               {isSubmitting ? "Création..." : "Continuer"}
             </button>
           </form>
         )}
 
         {step === 2 && (
-          <form onSubmit={handleFinish} className="flex flex-col gap-4 rounded-2xl border border-line bg-white/60 p-6">
+          <form onSubmit={handleFinish} className="flex flex-col gap-4 rounded-2xl border border-line bg-surface/60 p-6">
             <h1 className="font-display text-[20px] italic text-ink">Où êtes-vous ?</h1>
             <p className="text-[13px] text-ink/60">
               Pour vous proposer des artisans réellement proches de chez vous.
@@ -113,9 +118,9 @@ function ClientRegisterWizard() {
 
             <LocationForm onChange={setLocation} />
 
-            {error && <p className="rounded-lg bg-clay-soft px-3 py-2 text-[13px] text-clay-dark">{error}</p>}
+            {error && <p className="rounded-lg bg-danger-soft px-3 py-2 text-[13px] text-danger-dark">{error}</p>}
 
-            <button type="submit" disabled={isSubmitting} className="mt-2 rounded-xl bg-emerald px-4 py-2.5 text-[15px] font-medium text-paper hover:bg-emerald-dark disabled:opacity-60">
+            <button type="submit" disabled={isSubmitting} className="mt-2 rounded-xl bg-emerald px-4 py-2.5 text-[15px] font-medium text-onbrand hover:bg-emerald-dark disabled:opacity-60">
               {isSubmitting ? "Enregistrement..." : "Terminer mon inscription"}
             </button>
             <button type="button" onClick={handleFinish} className="text-[13px] text-ink/40 hover:text-ink/60">

@@ -26,16 +26,16 @@ export default function MyOffersPage() {
         <h1 className="font-display text-[26px] italic text-ink">Mes offres</h1>
         <a
           href="/artisan/offres/nouvelle"
-          className="rounded-xl bg-clay px-4 py-2 text-[14px] font-medium text-paper hover:bg-clay-dark"
+          className="rounded-xl bg-secondary px-4 py-2 text-[14px] font-medium text-onbrand hover:bg-secondary-dark"
         >
           + Nouvelle offre
         </a>
       </div>
 
       {isLoading && <p className="mt-8 text-ink/50">Chargement...</p>}
-      {error && <p className="mt-8 text-clay-dark">{error}</p>}
+      {error && <p className="mt-8 text-danger-dark">{error}</p>}
       {!isLoading && !error && offers.length === 0 && (
-        <div className="mt-8 rounded-xl border border-line bg-white/60 p-6">
+        <div className="mt-8 rounded-xl border border-line bg-surface/60 p-6">
           <p className="text-ink/70">
             Vous n'avez pas encore d'offre publiée.{" "}
             <a href="/artisan/offres/nouvelle" className="text-emerald-dark hover:underline">
@@ -50,7 +50,7 @@ export default function MyOffersPage() {
         {offers.map((o) => {
           const status = OFFER_STATUS_LABELS[o.status] ?? { label: o.status, className: "bg-paperDim text-ink/60" };
           return (
-            <div key={o.id} className="flex items-center justify-between rounded-xl border border-line bg-white/60 p-4">
+            <div key={o.id} className="flex items-center justify-between rounded-xl border border-line bg-surface/60 p-4">
               <div>
                 <p className="max-w-md truncate text-[15px] text-ink">{o.rawDescription}</p>
                 <p className="mt-1 text-[13px] text-ink/40">
@@ -66,7 +66,7 @@ export default function MyOffersPage() {
       </div>
 
       {offers.some((o) => ["SUBMITTED", "PENDING_CALL_VALIDATION", "CALL_IN_PROGRESS"].includes(o.status)) && (
-        <p className="mt-6 rounded-lg bg-gold-soft px-4 py-3 text-[14px] text-ink">
+        <p className="mt-6 rounded-lg bg-warning-soft px-4 py-3 text-[14px] text-ink">
           📞 Un opérateur KHEDMATI va vous appeler pour valider votre offre avant publication —
           c'est ce qui protège les clients contre les faux profils.
         </p>
