@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { RequestStatus } from "@khedmati/database";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateRequestDto } from "./dto/create-request.dto";
+import { UploadsService } from "../uploads/uploads.service";
 
 /**
  * Règle centrale de KHEDMATI (section 5) :
@@ -48,7 +49,10 @@ const ALLOWED_TRANSITIONS: Record<RequestStatus, RequestStatus[]> = {
 
 @Injectable()
 export class RequestsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private uploadsService: UploadsService,
+  ) {}
 
   async create(clientId: string, dto: CreateRequestDto) {
     const request = await this.prisma.serviceRequest.create({
@@ -140,7 +144,14 @@ export class RequestsService {
       };
     });
 
-    return { ...request, matches };
+    // Photos de la demande (section 6) : le bucket est privé, on signe les
+    // URLs à la lecture plutôt que de stocker un lien direct exploitable.
+    const signedAttachmentUrls = await this.uploadsService.getSignedUrls(
+      request.attachments.map((a) => a.url),
+    );
+    const attachments = request.attachments.map((a, i) => ({ ...a, url: signedAttachmentUrls[i] }));
+
+    return { ...request, matches, attachments };
   }
 
   /**

@@ -3,6 +3,7 @@ import { CallQueuePriority, CallStatus, OfferStatus, RequestStatus } from "@khed
 import { PrismaService } from "../prisma/prisma.service";
 import { RequestsService } from "../requests/requests.service";
 import { OffersService } from "../offers/offers.service";
+import { UploadsService } from "../uploads/uploads.service";
 import { ResolveCallDto } from "./dto/resolve-call.dto";
 import { CallbackRequestDto } from "./dto/callback-request.dto";
 
@@ -42,6 +43,7 @@ export class ValidationService {
     private prisma: PrismaService,
     private requestsService: RequestsService,
     private offersService: OffersService,
+    private uploadsService: UploadsService,
   ) {}
 
   /** File d'attente de l'opérateur, groupée par priorité (section 39). */
@@ -65,7 +67,7 @@ export class ValidationService {
     const validationCase = await this.prisma.validationCase.findUnique({
       where: { id },
       include: {
-        serviceRequest: true,
+        serviceRequest: { include: { attachments: true, profession: true } },
         offer: true,
         attempts: { orderBy: { attemptedAt: "asc" } },
         notes: { orderBy: { createdAt: "asc" } },
@@ -73,6 +75,17 @@ export class ValidationService {
       },
     });
     if (!validationCase) throw new NotFoundException("Dossier de validation introuvable.");
+
+    if (validationCase.serviceRequest?.attachments?.length) {
+      const signedUrls = await this.uploadsService.getSignedUrls(
+        validationCase.serviceRequest.attachments.map((a) => a.url),
+      );
+      validationCase.serviceRequest.attachments = validationCase.serviceRequest.attachments.map((a, i) => ({
+        ...a,
+        url: signedUrls[i] as string,
+      }));
+    }
+
     return validationCase;
   }
 

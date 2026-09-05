@@ -1,6 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { ForbiddenException, Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateReviewDto } from "./dto/create-review.dto";
+import { CreateClientReviewDto } from "./dto/create-client-review.dto";
 
 @Injectable()
 export class ReviewsService {
@@ -37,6 +38,56 @@ export class ReviewsService {
 
     await this.prisma.professionalProfile.update({
       where: { id: professionalId },
+      data: {
+        ratingAverage: agg._avg.ratingOverall ?? 0,
+        ratingCount: agg._count.ratingOverall,
+      },
+    });
+  }
+
+  /**
+   * Notation bidirectionnelle : l'artisan note le client (section 10).
+   * Une seule évaluation par prestation (contrainte unique en base,
+   * section 12) — une tentative de doublon échoue proprement.
+   */
+  async createClientReview(authorUserId: string, dto: CreateClientReviewDto) {
+    if (dto.requestId) {
+      const request = await this.prisma.serviceRequest.findUnique({
+        where: { id: dto.requestId },
+        include: { matches: { where: { status: "ACCEPTED" }, include: { professional: true } } },
+      });
+      const isAssignedProfessional = request?.matches.some((m) => m.professional.userId === authorUserId);
+      if (!request || !isAssignedProfessional) {
+        throw new ForbiddenException("Vous ne pouvez évaluer que le client d'une prestation qui vous a été confiée.");
+      }
+      if (request.status !== "COMPLETED") {
+        throw new ForbiddenException("La prestation doit être terminée avant de pouvoir évaluer le client.");
+      }
+    }
+
+    const review = await this.prisma.clientReview.create({
+      data: { authorId: authorUserId, ...dto },
+    });
+    await this.recomputeClientAggregate(dto.clientId);
+    return review;
+  }
+
+  async listForClient(clientId: string) {
+    return this.prisma.clientReview.findMany({
+      where: { clientId },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  private async recomputeClientAggregate(clientId: string) {
+    const agg = await this.prisma.clientReview.aggregate({
+      where: { clientId },
+      _avg: { ratingOverall: true },
+      _count: { ratingOverall: true },
+    });
+
+    await this.prisma.clientProfile.update({
+      where: { id: clientId },
       data: {
         ratingAverage: agg._avg.ratingOverall ?? 0,
         ratingCount: agg._count.ratingOverall,

@@ -106,6 +106,61 @@ export const api = {
   markRequestCompleted: (token: string, id: string) =>
     request<any>(`/requests/${id}/complete`, { method: "POST", token }),
 
+  // --- Upload de photos (sections 4, 6) ---
+  uploadImage: async (
+    token: string,
+    file: File,
+    context: "profile-photo" | "gallery" | "request-photo" | "business-logo",
+    requestId?: string,
+  ) => {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("context", context);
+    if (requestId) form.append("requestId", requestId);
+    const res = await fetch(`${API_URL}/uploads/image`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: form,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new ApiError(res.status, body.message ?? "Échec de l'envoi de la photo.");
+    }
+    return res.json() as Promise<{ key: string; url: string }>;
+  },
+
+  addGalleryItem: async (token: string, file: File, caption?: string) => {
+    const form = new FormData();
+    form.append("file", file);
+    if (caption) form.append("caption", caption);
+    const res = await fetch(`${API_URL}/users/me/gallery`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: form,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new ApiError(res.status, body.message ?? "Échec de l'ajout de la photo.");
+    }
+    return res.json();
+  },
+
+  deleteGalleryItem: (token: string, itemId: string) =>
+    request<any>(`/users/me/gallery/${itemId}`, { method: "DELETE", token }),
+
+  createClientReview: (
+    token: string,
+    data: {
+      clientId: string;
+      requestId?: string;
+      ratingOverall: number;
+      ratingRespect?: number;
+      ratingCommunication?: number;
+      ratingPunctuality?: number;
+      comment?: string;
+    },
+  ) => request<any>("/reviews/client", { method: "POST", token, body: JSON.stringify(data) }),
+
   // --- Offres artisan (section 8, 30) ---
   createOffer: (token: string, data: { rawDescription: string }) =>
     request<any>("/offers", { method: "POST", token, body: JSON.stringify(data) }),

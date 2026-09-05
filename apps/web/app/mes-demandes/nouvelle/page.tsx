@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth, ApiError } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { CategoryProfessionPicker } from "@/components/CategoryProfessionPicker";
+import { PhotoPicker } from "@/components/PhotoPicker";
 
 const URGENCY_OPTIONS = [
   { value: "NORMAL", label: "Normal" },
@@ -37,6 +38,8 @@ function NewRequestForm() {
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedProfession, setSelectedProfession] = useState<{ id: string; name: string } | null>(null);
   const [showPicker, setShowPicker] = useState(false);
+  const [photos, setPhotos] = useState<{ id: string; url: string; key: string }[]>([]);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   useEffect(() => {
     api.getCategoryTree().then(setCategories).catch(() => setCategories([]));
@@ -59,6 +62,23 @@ function NewRequestForm() {
     setShowRecap(true);
   };
 
+  const handlePhotoAdd = async (file: File) => {
+    if (!token) return;
+    setIsUploadingPhoto(true);
+    try {
+      const { key, url } = await api.uploadImage(token, file, "request-photo");
+      setPhotos((prev) => [...prev, { id: key, key, url }]);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Impossible d'envoyer la photo.");
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
+
+  const handlePhotoRemove = (id: string) => {
+    setPhotos((prev) => prev.filter((p) => p.id !== id));
+  };
+
   const handleConfirm = async () => {
     if (!token) return;
     setError(null);
@@ -75,6 +95,7 @@ function NewRequestForm() {
         urgency,
         professionId: selectedProfession?.id,
         ...(isoDate ? { desiredDate: isoDate } : {}),
+        ...(photos.length > 0 ? { attachmentUrls: photos.map((p) => p.key) } : {}),
       } as any);
       router.push(`/mes-demandes/${request.id}`);
     } catch (err) {
@@ -111,6 +132,17 @@ function NewRequestForm() {
                 {desiredDate}
                 {desiredTime ? ` à ${desiredTime}` : ""}
               </p>
+            </div>
+          )}
+          {photos.length > 0 && (
+            <div>
+              <p className="text-[12px] font-medium text-ink/50">Photos</p>
+              <div className="mt-1 flex gap-2">
+                {photos.map((p) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={p.id} src={p.url} alt="" className="h-14 w-14 rounded-lg object-cover" />
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -210,6 +242,13 @@ function NewRequestForm() {
             <label className="text-[13px] font-medium text-ink/70">Heure <span className="text-ink/40">(facultatif)</span></label>
             <input type="time" value={desiredTime} onChange={(e) => setDesiredTime(e.target.value)} disabled={!desiredDate} className="rounded-xl border border-line bg-surface px-4 py-2.5 text-[15px] text-ink focus:border-emerald disabled:opacity-50" />
           </div>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[13px] font-medium text-ink/70">
+            Photos <span className="text-ink/40">(facultatif — fuite, panne, mur à réparer...)</span>
+          </label>
+          <PhotoPicker photos={photos} onAdd={handlePhotoAdd} onRemove={handlePhotoRemove} isUploading={isUploadingPhoto} maxPhotos={5} />
         </div>
 
         <button

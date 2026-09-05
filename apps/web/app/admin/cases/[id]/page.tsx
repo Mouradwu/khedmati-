@@ -120,6 +120,14 @@ export default function CaseDetailPage() {
 
       <div className="mt-4 rounded-xl border border-line bg-surface/60 p-5">
         <p className="text-[15px] text-ink">{target?.rawDescription}</p>
+        {target?.attachments?.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {target.attachments.map((a: any) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={a.id} src={a.url} alt="" className="h-16 w-16 rounded-lg object-cover" />
+            ))}
+          </div>
+        )}
         {target?.urgency && (
           <p className="mt-2 text-[13px] text-ink/50">Urgence : {target.urgency}</p>
         )}

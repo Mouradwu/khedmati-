@@ -251,13 +251,29 @@ export class MatchingService {
     });
     if (!profile) return [];
 
-    return this.prisma.requestMatch.findMany({
+    const matches = await this.prisma.requestMatch.findMany({
       where: { professionalId: profile.id },
       orderBy: { createdAt: "desc" },
       include: {
-        request: { include: { profession: true, specialty: true } },
+        request: {
+          include: {
+            profession: true,
+            specialty: true,
+            // On ne sélectionne QUE ce qui est nécessaire à l'affichage —
+            // jamais le téléphone/email du client à ce stade (section 30,
+            // même règle que côté client pour l'artisan : pas de contact
+            // avant acceptation réelle).
+            client: {
+              select: {
+                clientProfile: { select: { id: true, firstName: true, lastName: true, ratingAverage: true, ratingCount: true } },
+              },
+            },
+          },
+        },
         response: true,
       },
     });
+
+    return matches;
   }
 }

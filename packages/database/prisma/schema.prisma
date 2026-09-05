@@ -283,6 +283,7 @@ model User {
   serviceRequests       ServiceRequest[]
   favorites             Favorite[]
   reviewsWritten        Review[]                 @relation("ReviewAuthor")
+  clientReviewsWritten  ClientReview[]           @relation("ClientReviewAuthor")
   notifications         Notification[]
   reportsFiled          Report[]                 @relation("ReportFiledBy")
   reportsAgainst        Report[]                 @relation("ReportTarget")
@@ -311,15 +312,48 @@ model ClientProfile {
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   firstName     String
   lastName      String
+  photoUrl      String?
   locationId    String?
   location      Location? @relation(fields: [locationId], references: [id])
 
+  ratingAverage Float    @default(0) // note laissee par les artisans (section 10-13)
+  ratingCount   Int      @default(0)
+
   serviceRequests ServiceRequest[] @relation("ClientProfileRequests")
+  clientReviews   ClientReview[]
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   @@map("client_profiles")
+}
+
+/**
+ * Notation bidirectionnelle "type Airbnb" (section 10) : l'artisan note le
+ * client, symetrique du modele Review (client note artisan) deja existant.
+ * Modele separe plutot que d'etendre Review — evite de rendre nullable un
+ * champ obligatoire existant (professionalId), donc zero risque sur les
+ * avis deja en base.
+ */
+model ClientReview {
+  id              String          @id @default(cuid())
+  requestId       String?
+  request         ServiceRequest? @relation(fields: [requestId], references: [id])
+  authorId        String // l'artisan (User.id) qui laisse l'avis
+  author          User            @relation("ClientReviewAuthor", fields: [authorId], references: [id])
+  clientId        String
+  client          ClientProfile   @relation(fields: [clientId], references: [id])
+
+  ratingOverall     Int // 1-5
+  ratingRespect     Int?
+  ratingCommunication Int?
+  ratingPunctuality Int?
+  comment           String?
+
+  createdAt       DateTime        @default(now())
+
+  @@unique([requestId, authorId]) // une seule evaluation par prestation (section 12)
+  @@map("client_reviews")
 }
 
 model ProfessionalProfile {
@@ -600,6 +634,7 @@ model ServiceRequest {
   quotes           Quote[]
   project          Project?
   reviews          Review[]
+  clientReviews    ClientReview[]
 
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt

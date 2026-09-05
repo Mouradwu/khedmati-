@@ -82,6 +82,14 @@ export default function RequestDetailPage() {
 
       <div className="mt-4 rounded-xl border border-line bg-surface/60 p-5">
         <p className="text-[15px] text-ink">{request.rawDescription}</p>
+        {request.attachments?.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {request.attachments.map((a: any) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={a.id} src={a.url} alt="" className="h-16 w-16 rounded-lg object-cover" />
+            ))}
+          </div>
+        )}
         <p className="mt-3 text-[13px] text-ink/50">Envoyée le {new Date(request.createdAt).toLocaleString("fr-FR")}</p>
       </div>
 

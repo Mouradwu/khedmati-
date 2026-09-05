@@ -1,4 +1,6 @@
-import { Body, Controller, Get, Param, Patch, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { memoryStorage } from "multer";
 import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
 import { CurrentUser, AuthenticatedUser } from "../common/decorators/current-user.decorator";
 import { UsersService } from "./users.service";
@@ -34,5 +36,23 @@ export class UsersController {
   @Get("professionals/:id")
   getPublicProfessionalProfile(@Param("id") id: string) {
     return this.usersService.getPublicProfessionalProfile(id);
+  }
+
+  // --- Galerie de réalisations (section 4) ---
+  @UseGuards(JwtAuthGuard)
+  @Post("me/gallery")
+  @UseInterceptors(FileInterceptor("file", { storage: memoryStorage(), limits: { fileSize: 8 * 1024 * 1024 } }))
+  addGalleryItem(
+    @UploadedFile() file: Express.Multer.File,
+    @Body("caption") caption: string | undefined,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.usersService.addGalleryItem(user.id, file.buffer, file.mimetype, caption);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete("me/gallery/:itemId")
+  deleteGalleryItem(@Param("itemId") itemId: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.usersService.deleteGalleryItem(user.id, itemId);
   }
 }

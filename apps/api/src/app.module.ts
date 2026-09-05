@@ -18,6 +18,7 @@ import { FavoritesModule } from "./favorites/favorites.module";
 import { ConversationsModule } from "./conversations/conversations.module";
 import { BillingModule } from "./billing/billing.module";
 import { AdminModule } from "./admin/admin.module";
+import { UploadsModule } from "./uploads/uploads.module";
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { AdminModule } from "./admin/admin.module";
     ConversationsModule,
     BillingModule,
     AdminModule,
+    UploadsModule,
 
     // TODO Phase 2 (section 47) — modules à ajouter sans réécriture
     // majeure grâce au schéma déjà en place : companies, employees,

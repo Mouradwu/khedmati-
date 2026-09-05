@@ -5,6 +5,7 @@ import { useAuth, ApiError } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { LocationForm, LocationValue } from "@/components/LocationForm";
 import { CategoryProfessionPicker } from "@/components/CategoryProfessionPicker";
+import { PhotoPicker } from "@/components/PhotoPicker";
 
 export default function ArtisanProfilePage() {
   const { token } = useAuth();
@@ -16,6 +17,10 @@ export default function ArtisanProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [gallery, setGallery] = useState<{ id: string; url: string }[]>([]);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [isUploadingGallery, setIsUploadingGallery] = useState(false);
 
   useEffect(() => {
     api.getCategoryTree().then(setCategories).catch(() => setCategories([]));
@@ -26,11 +31,48 @@ export default function ArtisanProfilePage() {
           if (me.professionalProfile) {
             setIsAcceptingRequests(me.professionalProfile.isAcceptingRequests ?? true);
             setRadiusKm(me.professionalProfile.interventionRadiusKm ?? 10);
+            setPhotoUrl(me.professionalProfile.photoUrl ?? null);
+            setGallery(me.professionalProfile.galleryItems ?? []);
           }
         })
         .catch(() => {});
     }
   }, [token]);
+
+  const handleProfilePhotoAdd = async (file: File) => {
+    if (!token) return;
+    setIsUploadingPhoto(true);
+    try {
+      const { key } = await api.uploadImage(token, file, "profile-photo");
+      await api.updateProfessionalProfile(token, { photoUrl: key });
+      const me = await api.getMe(token);
+      setPhotoUrl(me.professionalProfile?.photoUrl ?? null);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Impossible d'envoyer la photo.");
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
+
+  const handleGalleryAdd = async (file: File) => {
+    if (!token) return;
+    setIsUploadingGallery(true);
+    try {
+      await api.addGalleryItem(token, file);
+      const me = await api.getMe(token);
+      setGallery(me.professionalProfile?.galleryItems ?? []);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Impossible d'ajouter la photo.");
+    } finally {
+      setIsUploadingGallery(false);
+    }
+  };
+
+  const handleGalleryRemove = async (itemId: string) => {
+    if (!token) return;
+    await api.deleteGalleryItem(token, itemId);
+    setGallery((prev) => prev.filter((g) => g.id !== itemId));
+  };
 
   const toggleProfession = (id: string) => {
     setSelectedProfessionIds((prev) => {
@@ -75,6 +117,37 @@ export default function ArtisanProfilePage() {
       </p>
 
       <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-6 rounded-2xl border border-line bg-surface/60 p-6">
+        <div>
+          <h2 className="text-[15px] font-medium text-ink">Photo de profil</h2>
+          <div className="mt-2 flex items-center gap-4">
+            {photoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={photoUrl} alt="" className="h-16 w-16 rounded-full object-cover" />
+            )}
+            <PhotoPicker
+              photos={photoUrl ? [{ id: "profile", url: photoUrl }] : []}
+              onAdd={handleProfilePhotoAdd}
+              isUploading={isUploadingPhoto}
+              maxPhotos={1}
+            />
+          </div>
+        </div>
+
+        <div>
+          <h2 className="text-[15px] font-medium text-ink">Vos réalisations</h2>
+          <p className="mt-1 text-[13px] text-ink/50">
+            Photos de chantiers, avant/après — ça rassure les clients avant qu'ils ne vous contactent.
+          </p>
+          <div className="mt-2">
+            <PhotoPicker
+              photos={gallery}
+              onAdd={handleGalleryAdd}
+              onRemove={handleGalleryRemove}
+              isUploading={isUploadingGallery}
+              maxPhotos={9}
+            />
+          </div>
+        </div>
         <div>
           <h2 className="text-[15px] font-medium text-ink">Statut de disponibilité</h2>
           <div className="mt-2 flex gap-2">
