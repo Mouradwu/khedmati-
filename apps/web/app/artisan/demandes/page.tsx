@@ -113,30 +113,78 @@ export default function ArtisanRequestsPage() {
 
       <div className="mt-6 flex flex-col gap-3">
         {matches.map((m) => {
-          const client = m.request?.client?.clientProfile;
+          const client = m.request?.client;
+          const clientProfile = client?.clientProfile;
           const isCompleted = m.request?.status === "COMPLETED";
           const hasRated = ratedIds.has(m.id);
 
           return (
             <div key={m.id} className="rounded-xl border border-line bg-surface/60 p-5">
               <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-[15px] text-ink">{m.request?.rawDescription}</p>
-                  <p className="mt-1 text-[13px] text-ink/50">
-                    Correspondance : {m.score}/100
-                    {m.distanceKm != null ? ` · ${m.distanceKm} km` : ""}
-                    {client && (
-                      <>
-                        {" · "}
-                        {client.firstName} {client.lastName}
-                        {client.ratingCount > 0 ? ` (★ ${client.ratingAverage.toFixed(1)})` : ""}
-                      </>
-                    )}
-                  </p>
-                </div>
+                <span className="text-[12px] font-medium text-ink/50">
+                  Correspondance : {m.score}/100
+                  {m.distanceKm != null ? ` · ${m.distanceKm} km` : ""}
+                  {clientProfile?.ratingCount > 0 ? ` · Client ★ ${clientProfile.ratingAverage.toFixed(1)}` : ""}
+                </span>
                 <span className="shrink-0 rounded-full bg-warning-soft px-3 py-1 text-[12px] font-medium text-ink">
                   {m.status}
                 </span>
+              </div>
+
+              {/* Coordonnées du client — visibles dès reception, avant même
+                  d'accepter ou refuser (choix produit du 06/09). */}
+              {client && (
+                <div className="mt-3 rounded-lg bg-emerald-soft p-3">
+                  <p className="text-[14px] font-medium text-ink">
+                    👤 {clientProfile?.firstName} {clientProfile?.lastName}
+                  </p>
+                  {clientProfile?.location && (
+                    <p className="mt-0.5 text-[12px] text-ink/60">
+                      📍 {clientProfile.location.commune || clientProfile.location.wilaya}
+                      {clientProfile.location.addressLine ? ` — ${clientProfile.location.addressLine}` : ""}
+                    </p>
+                  )}
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <a href={`tel:${client.phone}`} className="rounded-xl bg-emerald px-4 py-2 text-[13px] font-medium text-onbrand hover:bg-emerald-dark">
+                      📞 Appeler {client.phone}
+                    </a>
+                    <a
+                      href={`https://wa.me/${client.phone?.replace(/[^0-9]/g, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-xl border border-emerald px-3 py-2 text-[13px] font-medium text-emerald-dark hover:bg-surface"
+                    >
+                      💬 WhatsApp
+                    </a>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(client.phone)}
+                      className="rounded-xl border border-line px-3 py-2 text-[13px] text-ink/70 hover:border-emerald"
+                    >
+                      📋 Copier
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-3">
+                <p className="text-[13px] font-medium text-ink/50">Besoin décrit</p>
+                <p className="mt-1 text-[15px] text-ink">{m.request?.rawDescription}</p>
+                {m.request?.attachments?.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {m.request.attachments.map((a: any) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img key={a.id} src={a.url} alt="" className="h-16 w-16 rounded-lg object-cover" />
+                    ))}
+                  </div>
+                )}
+                {m.request?.urgency && (
+                  <p className="mt-2 text-[12px] text-ink/50">Urgence : {m.request.urgency}</p>
+                )}
+                {m.request?.desiredDate && (
+                  <p className="mt-1 text-[12px] text-ink/50">
+                    Date souhaitée : {new Date(m.request.desiredDate).toLocaleString("fr-FR")}
+                  </p>
+                )}
               </div>
 
               {m.status === "SUGGESTED" && decliningId !== m.id && (
@@ -186,7 +234,7 @@ export default function ArtisanRequestsPage() {
                 <p className="mt-3 text-[13px] text-ink/50">Votre réponse : {m.response.message}</p>
               )}
 
-              {isCompleted && !hasRated && client && (
+              {isCompleted && !hasRated && clientProfile && (
                 <div className="mt-4 border-t border-line pt-4">
                   {ratingId === m.id ? (
                     <div>
@@ -207,7 +255,7 @@ export default function ArtisanRequestsPage() {
                       />
                       <div className="mt-2 flex gap-2">
                         <button
-                          onClick={() => submitClientReview(m.id, client.id, m.request.id)}
+                          onClick={() => submitClientReview(m.id, clientProfile.id, m.request.id)}
                           disabled={busyId === m.id}
                           className="rounded-xl bg-emerald px-4 py-2 text-[13px] font-medium text-onbrand hover:bg-emerald-dark disabled:opacity-60"
                         >

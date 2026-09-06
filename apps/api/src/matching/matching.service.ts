@@ -4,6 +4,7 @@ import { LocationsService } from "../locations/locations.service";
 import { ConversationsService } from "../conversations/conversations.service";
 import { RequestsService } from "../requests/requests.service";
 import { NotificationsService } from "../notifications/notifications.service";
+import { UploadsService } from "../uploads/uploads.service";
 
 /**
  * Moteur de matching (section 26 doc precedente / section 11 nouveau
@@ -25,6 +26,7 @@ export class MatchingService {
     private conversationsService: ConversationsService,
     @Inject(forwardRef(() => RequestsService)) private requestsService: RequestsService,
     private notificationsService: NotificationsService,
+    private uploadsService: UploadsService,
   ) {}
 
   private async getActiveConfig() {
@@ -62,6 +64,7 @@ export class MatchingService {
         location: true,
         specialties: true,
         availabilities: true,
+        user: { select: { phone: true, email: true } },
       },
     });
 
@@ -139,6 +142,8 @@ export class MatchingService {
       lastName: c.professional.lastName,
       businessName: c.professional.businessName,
       photoUrl: c.professional.photoUrl,
+      phone: c.professional.user.phone,
+      email: c.professional.user.email,
       yearsExperience: c.professional.yearsExperience,
       ratingAverage: c.professional.ratingAverage,
       ratingCount: c.professional.ratingCount,
@@ -146,8 +151,6 @@ export class MatchingService {
       interventionRadiusKm: c.professional.interventionRadiusKm,
     }));
   }
-
-  /** Juste le nombre — c'est tout ce que le CLIENT a le droit de voir. */
   async countCandidates(requestId: string): Promise<number> {
     try {
       const eligible = await this.computeCandidates(requestId);
@@ -158,40 +161,25 @@ export class MatchingService {
   }
 
   /**
-   * Envoi ciblé à UN artisan choisi par l'Admin Validation. Remplace
-   * l'ancienne diffusion automatique — un seul artisan est notifié,
-   * jamais toute la liste des candidats compatibles.
+   * Envoi à UN OU PLUSIEURS artisans choisis par l'Admin Validation, en une
+   * seule action (section 1-3 du workflow multi-envoi). Chaque artisan
+   * garde son propre statut de réponse (SUGGESTED jusqu'à ce qu'il
+   * accepte/décline individuellement) — l'acceptation de l'un n'annule pas
+   * automatiquement les autres invitations, l'admin garde la main pour
+   * gérer la suite (section 5).
    */
-  async sendToArtisan(requestId: string, professionalId: string) {
+  async sendToArtisans(requestId: string, professionalIds: string[]) {
+    if (!professionalIds.length) {
+      throw new BadRequestException("Sélectionnez au moins un artisan.");
+    }
+
     const request = await this.prisma.serviceRequest.findUnique({ where: { id: requestId } });
     if (!request) throw new NotFoundException("Demande introuvable.");
-    if (!["VALIDATED", "PUBLISHED", "MATCHING"].includes(request.status)) {
+    if (!["VALIDATED", "PUBLISHED", "MATCHING", "PROFESSIONAL_CONTACTED"].includes(request.status)) {
       throw new BadRequestException(
         "La demande doit être validée avant de pouvoir être envoyée à un artisan.",
       );
     }
-
-    const professional = await this.prisma.professionalProfile.findUnique({
-      where: { id: professionalId },
-      select: { userId: true, firstName: true, lastName: true, businessName: true },
-    });
-    if (!professional) throw new NotFoundException("Artisan introuvable.");
-
-    // Le score/distance sont recalculés ici pour garantir des valeurs
-    // fraîches (score est un champ obligatoire du modèle RequestMatch) —
-    // si l'artisan n'apparaît plus parmi les candidats éligibles (a
-    // changé de métier, de zone, etc. entre l'aperçu et l'envoi), on
-    // retombe sur un score neutre plutôt que d'échouer l'envoi.
-    const candidates = await this.computeCandidates(requestId);
-    const matchedCandidate = candidates.find((c) => c.professionalId === professionalId);
-    const score = matchedCandidate?.score ?? 50;
-    const distanceKm = matchedCandidate?.distanceKm ?? null;
-
-    const match = await this.prisma.requestMatch.upsert({
-      where: { requestId_professionalId: { requestId, professionalId } },
-      update: { status: "SUGGESTED", score, distanceKm }, // permet de renvoyer si un refus precedent existe
-      create: { requestId, professionalId, status: "SUGGESTED", score, distanceKm },
-    });
 
     if (request.status === "VALIDATED") {
       await this.requestsService.transitionStatus(requestId, "PUBLISHED");
@@ -199,17 +187,89 @@ export class MatchingService {
     } else if (request.status === "PUBLISHED") {
       await this.requestsService.transitionStatus(requestId, "MATCHING");
     }
-    await this.requestsService.transitionStatus(requestId, "PROFESSIONAL_CONTACTED");
+    if (request.status !== "PROFESSIONAL_CONTACTED") {
+      await this.requestsService.transitionStatus(requestId, "PROFESSIONAL_CONTACTED");
+    }
+
+    const candidates = await this.computeCandidates(requestId);
+    const results: any[] = [];
+    for (const professionalId of professionalIds) {
+      const professional = await this.prisma.professionalProfile.findUnique({
+        where: { id: professionalId },
+        select: { userId: true, firstName: true, lastName: true, businessName: true },
+      });
+      if (!professional) continue; // ignore silencieusement un id invalide plutôt que d'echouer tout l'envoi groupe
+
+      const matchedCandidate = candidates.find((c) => c.professionalId === professionalId);
+      const score = matchedCandidate?.score ?? 50;
+      const distanceKm = matchedCandidate?.distanceKm ?? null;
+
+      const match = await this.prisma.requestMatch.upsert({
+        where: { requestId_professionalId: { requestId, professionalId } },
+        update: { status: "SUGGESTED", score, distanceKm },
+        create: { requestId, professionalId, status: "SUGGESTED", score, distanceKm },
+      });
+
+      await this.notificationsService.notify({
+        userId: professional.userId,
+        channel: "IN_APP",
+        title: "Nouvelle demande d'intervention",
+        body: `Une demande vous a été transmise par KHEDMATI (${request.rawDescription.slice(0, 80)}).`,
+        meta: { requestId },
+      });
+
+      results.push(match);
+    }
+
+    return { sentCount: results.length, matches: results };
+  }
+
+  /** Compatibilité : envoi à un seul artisan (utilisé par les intégrations existantes). */
+  async sendToArtisan(requestId: string, professionalId: string) {
+    const { matches } = await this.sendToArtisans(requestId, [professionalId]);
+    return matches[0];
+  }
+
+  /**
+   * Relance un artisan qui n'a pas encore répondu (section 18) — renvoie
+   * simplement la notification, sans modifier le statut du match.
+   */
+  async remindArtisan(requestId: string, professionalId: string) {
+    const match = await this.prisma.requestMatch.findUnique({
+      where: { requestId_professionalId: { requestId, professionalId } },
+      include: { request: true, professional: true },
+    });
+    if (!match) throw new NotFoundException("Cet artisan n'a pas reçu cette demande.");
+    if (match.status !== "SUGGESTED") {
+      throw new BadRequestException("Cet artisan a déjà répondu, impossible de le relancer.");
+    }
 
     await this.notificationsService.notify({
-      userId: professional.userId,
+      userId: match.professional.userId,
       channel: "IN_APP",
-      title: "Nouvelle demande d'intervention",
-      body: `Une demande vous a été transmise par KHEDMATI (${request.rawDescription.slice(0, 80)}).`,
+      title: "Rappel : demande en attente",
+      body: `N'oubliez pas de répondre à la demande (${match.request.rawDescription.slice(0, 80)}).`,
       meta: { requestId },
     });
 
-    return match;
+    return { reminded: true };
+  }
+
+  /**
+   * Suivi individuel des artisans contactés pour une demande (section 4,
+   * 17) — un artisan par ligne, avec son statut propre.
+   */
+  async getDispatchStatus(requestId: string) {
+    return this.prisma.requestMatch.findMany({
+      where: { requestId },
+      orderBy: { distanceKm: "asc" },
+      include: {
+        professional: {
+          select: { firstName: true, lastName: true, businessName: true, photoUrl: true },
+        },
+        response: true,
+      },
+    });
   }
 
   async respondToMatch(matchId: string, accepted: boolean, message?: string) {
@@ -275,6 +335,16 @@ export class MatchingService {
    * ne contient QUE les demandes explicitement envoyées par l'Admin
    * Validation (jamais un candidat simplement "compatible").
    */
+  /**
+   * Demandes proposées à CE professionnel (son "inbox" de matching).
+   *
+   * DÉCISION PRODUIT (revue le 06/09) : dès qu'une demande lui est
+   * envoyée par l'Admin Validation, l'artisan voit désormais l'intégralité
+   * du descriptif (photos comprises) ET les coordonnées complètes du
+   * client (téléphone, email) — sans attendre son acceptation. C'est un
+   * choix assumé, différent de la règle symétrique côté client (qui, elle,
+   * ne voit toujours les coordonnées de l'artisan qu'après acceptation).
+   */
   async getMatchesForProfessional(professionalUserId: string) {
     const profile = await this.prisma.professionalProfile.findUnique({
       where: { userId: professionalUserId },
@@ -289,9 +359,22 @@ export class MatchingService {
           include: {
             profession: true,
             specialty: true,
+            attachments: true,
             client: {
               select: {
-                clientProfile: { select: { id: true, firstName: true, lastName: true, ratingAverage: true, ratingCount: true } },
+                id: true,
+                phone: true,
+                email: true,
+                clientProfile: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    ratingAverage: true,
+                    ratingCount: true,
+                    location: { select: { wilaya: true, daira: true, commune: true, addressLine: true } },
+                  },
+                },
               },
             },
           },
@@ -299,6 +382,15 @@ export class MatchingService {
         response: true,
       },
     });
+
+    if (matches.some((m) => m.request.attachments.length > 0)) {
+      const allKeys = matches.flatMap((m) => m.request.attachments.map((a) => a.url));
+      const signedUrls = await this.uploadsService.getSignedUrls(allKeys);
+      let i = 0;
+      for (const m of matches) {
+        m.request.attachments = m.request.attachments.map((a) => ({ ...a, url: signedUrls[i++] as string }));
+      }
+    }
 
     return matches;
   }

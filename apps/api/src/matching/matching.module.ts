@@ -5,9 +5,10 @@ import { LocationsModule } from "../locations/locations.module";
 import { ConversationsModule } from "../conversations/conversations.module";
 import { RequestsModule } from "../requests/requests.module";
 import { NotificationsModule } from "../notifications/notifications.module";
+import { UploadsModule } from "../uploads/uploads.module";
 
 @Module({
-  imports: [LocationsModule, ConversationsModule, forwardRef(() => RequestsModule), NotificationsModule],
+  imports: [LocationsModule, ConversationsModule, forwardRef(() => RequestsModule), NotificationsModule, UploadsModule],
   controllers: [MatchingController],
   providers: [MatchingService],
   exports: [MatchingService],

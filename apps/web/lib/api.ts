@@ -181,6 +181,16 @@ export const api = {
     request<any[]>(`/matching/requests/${requestId}/candidates`, { token }),
   sendRequestToArtisan: (token: string, requestId: string, professionalId: string) =>
     request<any>(`/matching/requests/${requestId}/send/${professionalId}`, { method: "POST", token }),
+  sendRequestToArtisans: (token: string, requestId: string, professionalIds: string[]) =>
+    request<any>(`/matching/requests/${requestId}/send`, {
+      method: "POST",
+      token,
+      body: JSON.stringify({ professionalIds }),
+    }),
+  getDispatchStatus: (token: string, requestId: string) =>
+    request<any[]>(`/matching/requests/${requestId}/dispatch-status`, { token }),
+  remindArtisan: (token: string, requestId: string, professionalId: string) =>
+    request<any>(`/matching/requests/${requestId}/remind/${professionalId}`, { method: "POST", token }),
 
   getQueue: (token: string, priority?: string) =>
     request<any[]>(`/validation/queue${priority ? `?priority=${priority}` : ""}`, { token }),

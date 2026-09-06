@@ -67,7 +67,27 @@ export class ValidationService {
     const validationCase = await this.prisma.validationCase.findUnique({
       where: { id },
       include: {
-        serviceRequest: { include: { attachments: true, profession: true } },
+        serviceRequest: {
+          include: {
+            attachments: true,
+            profession: true,
+            specialty: true,
+            client: {
+              select: {
+                id: true,
+                phone: true,
+                email: true,
+                clientProfile: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    location: { select: { wilaya: true, daira: true, commune: true, addressLine: true } },
+                  },
+                },
+              },
+            },
+          },
+        },
         offer: true,
         attempts: { orderBy: { attemptedAt: "asc" } },
         notes: { orderBy: { createdAt: "asc" } },
