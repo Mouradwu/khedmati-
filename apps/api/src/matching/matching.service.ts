@@ -177,10 +177,20 @@ export class MatchingService {
     });
     if (!professional) throw new NotFoundException("Artisan introuvable.");
 
+    // Le score/distance sont recalculés ici pour garantir des valeurs
+    // fraîches (score est un champ obligatoire du modèle RequestMatch) —
+    // si l'artisan n'apparaît plus parmi les candidats éligibles (a
+    // changé de métier, de zone, etc. entre l'aperçu et l'envoi), on
+    // retombe sur un score neutre plutôt que d'échouer l'envoi.
+    const candidates = await this.computeCandidates(requestId);
+    const matchedCandidate = candidates.find((c) => c.professionalId === professionalId);
+    const score = matchedCandidate?.score ?? 50;
+    const distanceKm = matchedCandidate?.distanceKm ?? null;
+
     const match = await this.prisma.requestMatch.upsert({
       where: { requestId_professionalId: { requestId, professionalId } },
-      update: { status: "SUGGESTED" }, // permet de renvoyer si un refus precedent existe
-      create: { requestId, professionalId, status: "SUGGESTED" },
+      update: { status: "SUGGESTED", score, distanceKm }, // permet de renvoyer si un refus precedent existe
+      create: { requestId, professionalId, status: "SUGGESTED", score, distanceKm },
     });
 
     if (request.status === "VALIDATED") {
