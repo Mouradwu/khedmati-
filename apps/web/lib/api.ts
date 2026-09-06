@@ -177,8 +177,10 @@ export const api = {
       body: JSON.stringify({ accepted, message }),
     }),
 
-  runMatching: (token: string, requestId: string) =>
-    request<any>(`/matching/requests/${requestId}/run`, { method: "POST", token }),
+  previewCandidates: (token: string, requestId: string) =>
+    request<any[]>(`/matching/requests/${requestId}/candidates`, { token }),
+  sendRequestToArtisan: (token: string, requestId: string, professionalId: string) =>
+    request<any>(`/matching/requests/${requestId}/send/${professionalId}`, { method: "POST", token }),
 
   getQueue: (token: string, priority?: string) =>
     request<any[]>(`/validation/queue${priority ? `?priority=${priority}` : ""}`, { token }),

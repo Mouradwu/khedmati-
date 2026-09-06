@@ -1,8 +1,9 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException, forwardRef } from "@nestjs/common";
 import { RequestStatus } from "@khedmati/database";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateRequestDto } from "./dto/create-request.dto";
 import { UploadsService } from "../uploads/uploads.service";
+import { MatchingService } from "../matching/matching.service";
 
 /**
  * Règle centrale de KHEDMATI (section 5) :
@@ -52,6 +53,7 @@ export class RequestsService {
   constructor(
     private prisma: PrismaService,
     private uploadsService: UploadsService,
+    @Inject(forwardRef(() => MatchingService)) private matchingService: MatchingService,
   ) {}
 
   async create(clientId: string, dto: CreateRequestDto) {
@@ -150,6 +152,21 @@ export class RequestsService {
       request.attachments.map((a) => a.url),
     );
     const attachments = request.attachments.map((a, i) => ({ ...a, url: signedAttachmentUrls[i] }));
+
+    // NOUVEAU WORKFLOW (section 8-9, 20) : le CLIENT ne doit JAMAIS voir la
+    // liste détaillée des artisans compatibles/contactés — uniquement un
+    // nombre, pour le rassurer, et le match ACCEPTÉ une fois le contact
+    // débloqué. C'est vérifié ici, côté serveur, pas seulement caché dans
+    // l'interface. L'admin et l'artisan concerné continuent de tout voir.
+    const isClientOwner = requester?.role === "CLIENT" && request.clientId === requester.id;
+    if (isClientOwner) {
+      const acceptedMatch = matches.find((m) => m.status === "ACCEPTED");
+      const visibleMatches = acceptedMatch ? [acceptedMatch] : [];
+      const compatibleArtisansCount = acceptedMatch
+        ? 0
+        : await this.matchingService.countCandidates(id).catch(() => 0);
+      return { ...request, matches: visibleMatches, attachments, compatibleArtisansCount };
+    }
 
     return { ...request, matches, attachments };
   }

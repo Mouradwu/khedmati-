@@ -10,14 +10,22 @@ import { MatchingService } from "./matching.service";
 export class MatchingController {
   constructor(private matchingService: MatchingService) {}
 
-  // Déclenché par un opérateur/admin juste après VALIDATED -> PUBLISHED,
-  // ou par un job planifié. Volontairement explicite plutôt qu'automatique
-  // pour garder une trace de qui a lancé le matching.
+  // Aperçu des artisans compatibles pour l'Admin Validation (section 10) —
+  // aucun effet de bord, ne notifie personne, ne crée aucun match.
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.OPERATOR, UserRole.ADMIN, UserRole.SUPER_ADMIN)
-  @Post("requests/:id/run")
-  run(@Param("id") id: string) {
-    return this.matchingService.runMatching(id);
+  @Get("requests/:id/candidates")
+  previewCandidates(@Param("id") id: string) {
+    return this.matchingService.previewCandidates(id);
+  }
+
+  // Envoi ciblé à UN artisan choisi par l'Admin Validation (section 13) —
+  // remplace l'ancienne diffusion automatique à tous les compatibles.
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.OPERATOR, UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @Post("requests/:id/send/:professionalId")
+  sendToArtisan(@Param("id") id: string, @Param("professionalId") professionalId: string) {
+    return this.matchingService.sendToArtisan(id, professionalId);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

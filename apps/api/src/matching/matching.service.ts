@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, NotFoundException, forwardRef } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { LocationsService } from "../locations/locations.service";
 import { ConversationsService } from "../conversations/conversations.service";
@@ -6,14 +6,16 @@ import { RequestsService } from "../requests/requests.service";
 import { NotificationsService } from "../notifications/notifications.service";
 
 /**
- * Moteur de matching (section 26). Les poids par défaut reproduisent
- * exactement la répartition du cahier des charges :
+ * Moteur de matching (section 26 doc precedente / section 11 nouveau
+ * workflow). Les poids par defaut reproduisent la repartition du cahier
+ * des charges : Metier 30% - Specialite 20% - Distance 20% - Disponibilite
+ * 10% - Experience 5% - Reputation 5% - Temps de reponse 5% - Zone 5%.
+ * Stockes dans MatchingConfig (table administrable), jamais code en dur.
  *
- *   Métier 30% · Spécialité 20% · Distance 20% · Disponibilité 10%
- *   Expérience 5% · Réputation 5% · Temps de réponse 5% · Zone 5%
- *
- * Ils sont stockés dans `MatchingConfig` (table administrable) et jamais
- * codés en dur dans le frontend ou figés dans ce service.
+ * NOUVEAU WORKFLOW : le moteur ne fait plus que CALCULER et CLASSER les
+ * candidats compatibles. C'est l'Admin Validation qui decide, un par un,
+ * a qui envoyer reellement la demande (plus de diffusion automatique a
+ * tous les artisans compatibles simultanement).
  */
 @Injectable()
 export class MatchingService {
@@ -21,7 +23,7 @@ export class MatchingService {
     private prisma: PrismaService,
     private locationsService: LocationsService,
     private conversationsService: ConversationsService,
-    private requestsService: RequestsService,
+    @Inject(forwardRef(() => RequestsService)) private requestsService: RequestsService,
     private notificationsService: NotificationsService,
   ) {}
 
@@ -34,20 +36,16 @@ export class MatchingService {
   }
 
   /**
-   * Calcule et persiste les candidats pour une demande PUBLISHED / MATCHING.
-   * Appelé après la validation par appel — jamais avant.
+   * Calcule les candidats compatibles, SANS effet de bord : aucune ligne
+   * RequestMatch creee, aucune notification envoyee. Sert a la fois a
+   * l'apercu admin et a sendToArtisan.
    */
-  async runMatching(requestId: string) {
+  private async computeCandidates(requestId: string) {
     const request = await this.prisma.serviceRequest.findUnique({
       where: { id: requestId },
       include: { location: true },
     });
     if (!request) throw new NotFoundException("Demande introuvable.");
-    if (!["PUBLISHED", "MATCHING"].includes(request.status)) {
-      throw new BadRequestException(
-        "Le matching ne peut être lancé que sur une demande validée et publiée.",
-      );
-    }
     if (!request.professionId) {
       throw new BadRequestException("La demande doit être rattachée à un corps de métier.");
     }
@@ -58,6 +56,7 @@ export class MatchingService {
       where: {
         professions: { some: { professionId: request.professionId } },
         location: { isNot: null },
+        isAcceptingRequests: true, // uniquement les artisans reellement disponibles
       },
       include: {
         location: true,
@@ -77,12 +76,12 @@ export class MatchingService {
             )
           : null;
 
-      const professionScore = 1; // déjà filtré par profession exacte
+      const professionScore = 1; // deja filtre par profession exacte
       const specialtyScore = request.specialtyId
         ? pro.specialties.some((s) => s.specialtyId === request.specialtyId)
           ? 1
           : 0.4
-        : 0.7; // pas de spécialité précisée par le client -> score neutre
+        : 0.7; // pas de specialite precisee -> score neutre
 
       const distanceScore =
         distanceKm === null
@@ -112,76 +111,95 @@ export class MatchingService {
         zoneScore * config.weightInterventionZone;
 
       return {
+        professional: pro,
         professionalId: pro.id,
-        score: Math.round(weightedScore * 1000) / 10, // 0-100, 1 décimale
+        score: Math.round(weightedScore * 1000) / 10,
         distanceKm: distanceKm !== null ? Math.round(distanceKm * 10) / 10 : null,
       };
     });
 
-    // On ne propose que les artisans dont le rayon d'intervention couvre
-    // réellement la demande, ou dont la localisation est inconnue (à
-    // confirmer manuellement par l'opérateur).
-    const eligible = scored
+    return scored
       .filter((s) => s.distanceKm === null || s.distanceKm <= 100)
       .sort((a, b) => b.score - a.score)
       .slice(0, 20);
+  }
 
-    const existingMatches = await this.prisma.requestMatch.findMany({
-      where: { requestId },
-      select: { professionalId: true },
-    });
-    const existingMatchProfessionalIds = new Set(existingMatches.map((m) => m.professionalId));
+  /**
+   * Aperçu pour l'Admin Validation : liste classée des artisans
+   * compatibles, avec les informations nécessaires pour choisir — jamais
+   * persisté, jamais envoyé aux artisans à ce stade.
+   */
+  async previewCandidates(requestId: string) {
+    const eligible = await this.computeCandidates(requestId);
+    return eligible.map((c) => ({
+      professionalId: c.professionalId,
+      score: c.score,
+      distanceKm: c.distanceKm,
+      firstName: c.professional.firstName,
+      lastName: c.professional.lastName,
+      businessName: c.professional.businessName,
+      photoUrl: c.professional.photoUrl,
+      yearsExperience: c.professional.yearsExperience,
+      ratingAverage: c.professional.ratingAverage,
+      ratingCount: c.professional.ratingCount,
+      isAcceptingRequests: c.professional.isAcceptingRequests,
+      interventionRadiusKm: c.professional.interventionRadiusKm,
+    }));
+  }
 
-    await this.prisma.$transaction(
-      eligible.map((s) =>
-        this.prisma.requestMatch.upsert({
-          where: { requestId_professionalId: { requestId, professionalId: s.professionalId } },
-          update: { score: s.score, distanceKm: s.distanceKm },
-          create: {
-            requestId,
-            professionalId: s.professionalId,
-            score: s.score,
-            distanceKm: s.distanceKm,
-            status: "SUGGESTED",
-          },
-        }),
-      ),
-    );
+  /** Juste le nombre — c'est tout ce que le CLIENT a le droit de voir. */
+  async countCandidates(requestId: string): Promise<number> {
+    try {
+      const eligible = await this.computeCandidates(requestId);
+      return eligible.length;
+    } catch {
+      return 0;
+    }
+  }
 
-    if (request.status === "PUBLISHED") {
-      await this.prisma.serviceRequest.update({
-        where: { id: requestId },
-        data: { status: "MATCHING" },
-      });
+  /**
+   * Envoi ciblé à UN artisan choisi par l'Admin Validation. Remplace
+   * l'ancienne diffusion automatique — un seul artisan est notifié,
+   * jamais toute la liste des candidats compatibles.
+   */
+  async sendToArtisan(requestId: string, professionalId: string) {
+    const request = await this.prisma.serviceRequest.findUnique({ where: { id: requestId } });
+    if (!request) throw new NotFoundException("Demande introuvable.");
+    if (!["VALIDATED", "PUBLISHED", "MATCHING"].includes(request.status)) {
+      throw new BadRequestException(
+        "La demande doit être validée avant de pouvoir être envoyée à un artisan.",
+      );
     }
 
-    // Notification des artisans nouvellement proposés (section 17) — les
-    // nouveaux (créés, pas juste mis à jour) uniquement, pour ne pas
-    // renotifier à chaque recalcul de score.
-    const newlyMatched = eligible.filter(
-      (s) => !existingMatchProfessionalIds.has(s.professionalId),
-    );
-    for (const s of newlyMatched) {
-      const pro = await this.prisma.professionalProfile.findUnique({
-        where: { id: s.professionalId },
-        select: { userId: true },
-      });
-      if (pro) {
-        await this.notificationsService.notify({
-          userId: pro.userId,
-          channel: "IN_APP",
-          title: "Nouvelle demande d'intervention",
-          body: `Une demande correspond à votre profil (${request.rawDescription.slice(0, 80)}).`,
-          meta: { requestId },
-        });
-      }
-    }
-
-    return this.prisma.requestMatch.findMany({
-      where: { requestId },
-      orderBy: { score: "desc" },
-      include: { professional: true },
+    const professional = await this.prisma.professionalProfile.findUnique({
+      where: { id: professionalId },
+      select: { userId: true, firstName: true, lastName: true, businessName: true },
     });
+    if (!professional) throw new NotFoundException("Artisan introuvable.");
+
+    const match = await this.prisma.requestMatch.upsert({
+      where: { requestId_professionalId: { requestId, professionalId } },
+      update: { status: "SUGGESTED" }, // permet de renvoyer si un refus precedent existe
+      create: { requestId, professionalId, status: "SUGGESTED" },
+    });
+
+    if (request.status === "VALIDATED") {
+      await this.requestsService.transitionStatus(requestId, "PUBLISHED");
+      await this.requestsService.transitionStatus(requestId, "MATCHING");
+    } else if (request.status === "PUBLISHED") {
+      await this.requestsService.transitionStatus(requestId, "MATCHING");
+    }
+    await this.requestsService.transitionStatus(requestId, "PROFESSIONAL_CONTACTED");
+
+    await this.notificationsService.notify({
+      userId: professional.userId,
+      channel: "IN_APP",
+      title: "Nouvelle demande d'intervention",
+      body: `Une demande vous a été transmise par KHEDMATI (${request.rawDescription.slice(0, 80)}).`,
+      meta: { requestId },
+    });
+
+    return match;
   }
 
   async respondToMatch(matchId: string, accepted: boolean, message?: string) {
@@ -198,11 +216,6 @@ export class MatchingService {
 
     const artisanName = match.professional.businessName || `${match.professional.firstName} ${match.professional.lastName}`;
 
-    // Acceptation = déblocage du contact (section 20-21, règle centrale du
-    // parcours demandeur/artisan) : on ouvre la conversation associée, et
-    // on fait avancer le statut de la demande elle-même (pas seulement du
-    // match) pour que le reste du cycle de vie (terminée, avis) reste
-    // cohérent avec la machine à états.
     if (accepted) {
       await this.conversationsService.unlockAfterAcceptance({
         requestId: match.requestId,
@@ -226,12 +239,18 @@ export class MatchingService {
         meta: { requestId: match.requestId },
       });
     } else {
-      // section 19 : notifier le refus et inviter à voir d'autres artisans.
+      // Refus : la demande revient a MATCHING pour que l'Admin Validation
+      // puisse choisir un autre artisan (nouveau workflow, l'admin reste
+      // le point de controle a chaque etape).
+      if (match.request.status === "PROFESSIONAL_CONTACTED") {
+        await this.requestsService.transitionStatus(match.requestId, "MATCHING");
+      }
+
       await this.notificationsService.notify({
         userId: match.request.clientId,
         channel: "IN_APP",
-        title: "Artisan non disponible",
-        body: `${artisanName} n'est pas disponible pour cette demande. D'autres artisans peuvent être proposés.`,
+        title: "Recherche en cours",
+        body: `Nous recherchons un autre artisan disponible pour votre demande.`,
         meta: { requestId: match.requestId },
       });
     }
@@ -243,7 +262,8 @@ export class MatchingService {
 
   /**
    * Demandes proposées à CE professionnel (son "inbox" de matching) —
-   * relie enfin le moteur de matching à une interface consultable.
+   * ne contient QUE les demandes explicitement envoyées par l'Admin
+   * Validation (jamais un candidat simplement "compatible").
    */
   async getMatchesForProfessional(professionalUserId: string) {
     const profile = await this.prisma.professionalProfile.findUnique({
@@ -259,10 +279,6 @@ export class MatchingService {
           include: {
             profession: true,
             specialty: true,
-            // On ne sélectionne QUE ce qui est nécessaire à l'affichage —
-            // jamais le téléphone/email du client à ce stade (section 30,
-            // même règle que côté client pour l'artisan : pas de contact
-            // avant acceptation réelle).
             client: {
               select: {
                 clientProfile: { select: { id: true, firstName: true, lastName: true, ratingAverage: true, ratingCount: true } },

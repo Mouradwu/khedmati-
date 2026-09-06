@@ -1,10 +1,11 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { RequestsController } from "./requests.controller";
 import { RequestsService } from "./requests.service";
 import { UploadsModule } from "../uploads/uploads.module";
+import { MatchingModule } from "../matching/matching.module";
 
 @Module({
-  imports: [UploadsModule],
+  imports: [UploadsModule, forwardRef(() => MatchingModule)],
   controllers: [RequestsController],
   providers: [RequestsService],
   exports: [RequestsService],

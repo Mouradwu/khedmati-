@@ -151,30 +151,31 @@ export default function RequestDetailPage() {
         </p>
       )}
 
+      {/* Nouveau workflow : le client ne voit jamais la liste des artisans
+          compatibles ni leurs scores — uniquement un nombre, pour le
+          rassurer, jusqu'à ce qu'un artisan accepte réellement. */}
+      {!acceptedMatch && typeof request.compatibleArtisansCount === "number" && request.compatibleArtisansCount > 0 && (
+        <div className="mt-6 rounded-xl border border-line bg-surface/60 p-5 text-center">
+          <p className="text-[32px] font-semibold text-emerald-dark">{request.compatibleArtisansCount}</p>
+          <p className="text-[14px] text-ink/70">artisan{request.compatibleArtisansCount > 1 ? "s" : ""} disponible{request.compatibleArtisansCount > 1 ? "s" : ""} dans votre périmètre</p>
+          <p className="mt-2 text-[13px] text-ink/50">
+            Notre équipe va sélectionner un professionnel disponible et vous mettre en relation.
+          </p>
+        </div>
+      )}
+
       {request.matches?.length > 0 && (
         <div className="mt-6">
-          <h2 className="text-[13px] font-medium text-ink/70">Professionnels proposés</h2>
+          <h2 className="text-[13px] font-medium text-ink/70">Mise en relation</h2>
           <div className="mt-2 flex flex-col gap-2">
             {request.matches.map((m: any) => {
               const isAccepted = m.status === "ACCEPTED";
-              const isDeclined = m.status === "DECLINED";
               return (
                 <div key={m.id} className="rounded-xl border border-line bg-surface/60 p-4">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-[15px] text-ink">
-                        {m.professional?.firstName} {m.professional?.lastName}
-                        {m.professional?.businessName ? ` — ${m.professional.businessName}` : ""}
-                      </p>
-                      <p className="mt-1 text-[13px] text-ink/50">
-                        Score de correspondance : {m.score}/100
-                        {m.distanceKm != null ? ` · ${m.distanceKm} km` : ""}
-                      </p>
-                    </div>
-                    {isDeclined && (
-                      <span className="rounded-full bg-paperDim px-3 py-1 text-[12px] text-ink/50">Non disponible</span>
-                    )}
-                  </div>
+                  <p className="text-[15px] text-ink">
+                    {m.professional?.firstName} {m.professional?.lastName}
+                    {m.professional?.businessName ? ` — ${m.professional.businessName}` : ""}
+                  </p>
 
                   {isAccepted && m.professional?.phone && (
                     <div className="mt-3 rounded-lg bg-emerald-soft p-3">

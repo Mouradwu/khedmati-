@@ -30,6 +30,9 @@ export default function CaseDetailPage() {
   const [summary, setSummary] = useState("");
   const [note, setNote] = useState("");
   const [isBusy, setIsBusy] = useState(false);
+  const [candidates, setCandidates] = useState<any[] | null>(null);
+  const [isLoadingCandidates, setIsLoadingCandidates] = useState(false);
+  const [sentToId, setSentToId] = useState<string | null>(null);
 
   const load = () => {
     if (!token) return;
@@ -42,6 +45,13 @@ export default function CaseDetailPage() {
   };
 
   useEffect(load, [token, caseId]);
+
+  useEffect(() => {
+    if (caseData && ["PUBLISHED", "MATCHING", "PROFESSIONAL_CONTACTED"].includes(caseData.serviceRequest?.status) && candidates === null) {
+      loadCandidates();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [caseData?.serviceRequest?.status]);
 
   const handleStartCall = async () => {
     if (!token) return;
@@ -85,15 +95,40 @@ export default function CaseDetailPage() {
     setError(null);
     try {
       await api.publish(token, caseData.serviceRequestId, caseData.offerId);
-      // Publication + lancement immédiat de la recherche d'artisans
-      // correspondants — l'utilisateur n'a pas à déclencher deux actions
-      // séparées pour un seul geste métier.
-      if (caseData.serviceRequestId) {
-        await api.runMatching(token, caseData.serviceRequestId);
-      }
       load();
+      if (caseData.serviceRequestId) {
+        await loadCandidates();
+      }
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Impossible de publier.");
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const loadCandidates = async () => {
+    if (!token || !caseData?.serviceRequestId) return;
+    setIsLoadingCandidates(true);
+    try {
+      const result = await api.previewCandidates(token, caseData.serviceRequestId);
+      setCandidates(result);
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Impossible de charger les artisans compatibles.");
+    } finally {
+      setIsLoadingCandidates(false);
+    }
+  };
+
+  const handleSendToArtisan = async (professionalId: string) => {
+    if (!token || !caseData?.serviceRequestId) return;
+    setIsBusy(true);
+    setError(null);
+    try {
+      await api.sendRequestToArtisan(token, caseData.serviceRequestId, professionalId);
+      setSentToId(professionalId);
+      load();
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Impossible d'envoyer la demande à cet artisan.");
     } finally {
       setIsBusy(false);
     }
@@ -107,6 +142,9 @@ export default function CaseDetailPage() {
   const canPublish =
     ["VALIDATED", "VALIDATED_WITH_CHANGES"].includes(caseData.resolvedStatus) &&
     target?.status !== "PUBLISHED";
+  const showCandidates =
+    caseData.targetType === "SERVICE_REQUEST" &&
+    ["PUBLISHED", "MATCHING", "PROFESSIONAL_CONTACTED"].includes(target?.status);
 
   return (
     <div className="max-w-2xl">
@@ -232,10 +270,58 @@ export default function CaseDetailPage() {
             disabled={isBusy}
             className="mt-3 rounded-xl border border-emerald bg-emerald-soft px-5 py-2.5 text-[15px] font-medium text-emerald-dark hover:bg-emerald hover:text-onbrand disabled:opacity-60"
           >
-            {isBusy ? "Publication..." : "🚀 Publier et rechercher des artisans"}
+            {isBusy ? "Publication..." : "🚀 Valider et voir les artisans disponibles"}
           </button>
         )}
       </div>
+
+      {showCandidates && (
+        <div className="mt-6">
+          <h2 className="font-display text-[18px] italic text-ink">Artisans disponibles</h2>
+          <p className="mt-1 text-[13px] text-ink/60">
+            Choisissez un artisan et envoyez-lui la demande — un seul à la fois. Le client ne voit
+            jamais cette liste, uniquement le nombre d'artisans disponibles.
+          </p>
+
+          {isLoadingCandidates && <p className="mt-3 text-ink/50">Recherche des artisans compatibles...</p>}
+
+          {!isLoadingCandidates && candidates?.length === 0 && (
+            <p className="mt-3 rounded-lg bg-warning-soft px-3 py-2 text-[13px] text-ink">
+              Aucun artisan disponible dans le périmètre pour ce métier actuellement.
+            </p>
+          )}
+
+          <div className="mt-3 flex flex-col gap-2">
+            {candidates?.map((c) => (
+              <div key={c.professionalId} className="flex items-center justify-between rounded-xl border border-line bg-surface/60 p-4">
+                <div className="flex items-center gap-3">
+                  {c.photoUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={c.photoUrl} alt="" className="h-10 w-10 rounded-full object-cover" />
+                  )}
+                  <div>
+                    <p className="text-[14px] font-medium text-ink">
+                      {c.businessName || `${c.firstName} ${c.lastName}`}
+                    </p>
+                    <p className="text-[12px] text-ink/50">
+                      {c.score}% compatible · 📍 {c.distanceKm != null ? `${c.distanceKm} km` : "distance inconnue"}
+                      {c.ratingCount > 0 ? ` · ⭐ ${c.ratingAverage.toFixed(1)} (${c.ratingCount})` : ""}
+                      {c.yearsExperience ? ` · ${c.yearsExperience} ans d'expérience` : ""}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleSendToArtisan(c.professionalId)}
+                  disabled={isBusy || sentToId === c.professionalId}
+                  className="shrink-0 rounded-xl bg-emerald px-4 py-2 text-[13px] font-medium text-onbrand hover:bg-emerald-dark disabled:opacity-60"
+                >
+                  {sentToId === c.professionalId ? "✓ Envoyée" : "📤 Envoyer la demande"}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
